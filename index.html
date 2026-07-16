@@ -3,356 +3,225 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="HTML Excel — ứng dụng bảng tính giống Microsoft Excel trong trình duyệt" />
-  <title>HTML Excel</title>
+  <meta name="description" content="HTML Sheets — bảng tính giao diện Google Sheets trong trình duyệt" />
+  <title>Untitled spreadsheet - HTML Sheets</title>
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='3' fill='%23217346'/><text x='16' y='22' text-anchor='middle' fill='white' font-size='13' font-family='Segoe UI' font-weight='bold'>X</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><path fill='%230F9D58' d='M8 4h20l12 12v28a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'/><path fill='%2387CEAC' d='M28 4v10a2 2 0 0 0 2 2h10'/><path fill='%23fff' d='M14 22h20v3H14zm0 7h20v3H14zm0 7h12v3H14z'/></svg>" />
 </head>
 <body>
   <div class="app-main">
-    <!-- Title bar -->
-    <div class="titlebar">
-      <div class="logo">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="2" fill="#fff" fill-opacity=".2"/>
-          <path d="M7 7h10M7 12h10M7 17h6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- Header like Google Docs/Sheets -->
+    <div class="docs-header">
+      <div class="docs-logo" id="btnLogo" title="HTML Sheets">
+        <svg width="36" height="36" viewBox="0 0 48 48">
+          <path fill="#0F9D58" d="M8 4h20l12 12v28a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+          <path fill="#87CEAC" d="M28 4v10a2 2 0 0 0 2 2h10"/>
+          <path fill="#fff" d="M14 22h20v3H14zm0 7h20v3H14zm0 7h12v3H14z"/>
         </svg>
-        HTML Excel
       </div>
-      <div class="doc-name" id="fileName">Sổ làm việc chưa đặt tên</div>
-      <div class="title-actions">
-        <button type="button" class="tbtn" id="btnTheme" title="Sáng / Tối">🌓</button>
-        <button type="button" class="tbtn" id="btnHelp" title="Trợ giúp (F1)">?</button>
+      <div class="docs-meta">
+        <div class="doc-title-row">
+          <input class="doc-title" id="fileName" value="Untitled spreadsheet" spellcheck="false" />
+          <button type="button" class="doc-star" title="Star" id="btnStar">☆</button>
+          <span class="doc-badge" id="fileBadge">Sheets</span>
+        </div>
+        <div class="menu-bar" id="menuBar">
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mFile">File</button>
+            <div class="menu-dd" id="mFile">
+              <button type="button" data-act="new">New <kbd>Ctrl+N</kbd></button>
+              <button type="button" data-act="open">Open <kbd>Ctrl+O</kbd></button>
+              <button type="button" data-act="save">Download <kbd>Ctrl+S</kbd></button>
+              <div class="sep"></div>
+              <button type="button" data-act="save-xlsx">Download as Excel (.xlsx)</button>
+              <button type="button" data-act="save-csv">Download as CSV</button>
+              <button type="button" data-act="save-ods">Download as ODS</button>
+              <div class="sep"></div>
+              <button type="button" data-act="sample">Open sample</button>
+            </div>
+          </div>
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mEdit">Edit</button>
+            <div class="menu-dd" id="mEdit">
+              <button type="button" data-act="undo">Undo <kbd>Ctrl+Z</kbd></button>
+              <button type="button" data-act="redo">Redo <kbd>Ctrl+Y</kbd></button>
+              <div class="sep"></div>
+              <button type="button" data-act="cut">Cut <kbd>Ctrl+X</kbd></button>
+              <button type="button" data-act="copy">Copy <kbd>Ctrl+C</kbd></button>
+              <button type="button" data-act="paste">Paste <kbd>Ctrl+V</kbd></button>
+              <div class="sep"></div>
+              <button type="button" data-act="find">Find and replace <kbd>Ctrl+H</kbd></button>
+              <button type="button" data-act="selectAll">Select all <kbd>Ctrl+A</kbd></button>
+            </div>
+          </div>
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mView">View</button>
+            <div class="menu-dd" id="mView">
+              <button type="button" data-act="freeze">Freeze header row</button>
+              <button type="button" data-act="gridlines">Toggle gridlines</button>
+              <button type="button" data-act="showFx">Show formulas</button>
+              <div class="sep"></div>
+              <button type="button" data-act="zoomIn">Zoom in</button>
+              <button type="button" data-act="zoomOut">Zoom out</button>
+              <button type="button" data-act="zoom100">Zoom 100%</button>
+              <div class="sep"></div>
+              <button type="button" data-act="theme">Light / Dark theme</button>
+            </div>
+          </div>
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mInsert">Insert</button>
+            <div class="menu-dd" id="mInsert">
+              <button type="button" data-act="addRow">Insert row</button>
+              <button type="button" data-act="addCol">Insert column</button>
+              <button type="button" data-act="addSheet">Insert sheet</button>
+              <div class="sep"></div>
+              <button type="button" data-act="fxPanel">Function list</button>
+              <button type="button" data-act="calc">Calculator</button>
+            </div>
+          </div>
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mFormat">Format</button>
+            <div class="menu-dd" id="mFormat">
+              <button type="button" data-act="bold">Bold <kbd>Ctrl+B</kbd></button>
+              <button type="button" data-act="italic">Italic <kbd>Ctrl+I</kbd></button>
+              <button type="button" data-act="underline">Underline <kbd>Ctrl+U</kbd></button>
+              <div class="sep"></div>
+              <button type="button" data-act="alignLeft">Align left</button>
+              <button type="button" data-act="alignCenter">Align center</button>
+              <button type="button" data-act="alignRight">Align right</button>
+              <div class="sep"></div>
+              <button type="button" data-act="numCurrency">Number → Currency</button>
+              <button type="button" data-act="numPercent">Number → Percent</button>
+              <button type="button" data-act="clearFmt">Clear formatting</button>
+            </div>
+          </div>
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mData">Data</button>
+            <div class="menu-dd" id="mData">
+              <button type="button" data-act="sortAsc">Sort sheet A → Z</button>
+              <button type="button" data-act="sortDesc">Sort sheet Z → A</button>
+              <div class="sep"></div>
+              <button type="button" data-act="tool-sum">Insert SUM below</button>
+              <button type="button" data-act="tool-avg">Insert AVERAGE below</button>
+              <button type="button" data-act="tool-pct">% of total</button>
+              <button type="button" data-act="tool-running">Running total</button>
+              <div class="sep"></div>
+              <button type="button" data-act="tool-vatAdd">Add VAT 10%</button>
+              <button type="button" data-act="tool-loan">Loan calculator</button>
+            </div>
+          </div>
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mTools">Tools</button>
+            <div class="menu-dd" id="mTools">
+              <button type="button" data-act="calc">Calculator <kbd>Ctrl+Shift+C</kbd></button>
+              <button type="button" data-act="fxPanel">Function suggestions</button>
+              <button type="button" data-act="tool-evaluate">Evaluate expression…</button>
+              <div class="sep"></div>
+              <button type="button" data-act="tool-interest">Simple interest…</button>
+              <button type="button" data-act="tool-compound">Compound interest…</button>
+              <button type="button" data-act="tool-discount">Discount…</button>
+            </div>
+          </div>
+          <div class="menu-item">
+            <button type="button" class="menu-btn" data-menu="mHelp">Help</button>
+            <div class="menu-dd" id="mHelp">
+              <button type="button" data-act="help">Keyboard shortcuts <kbd>F1</kbd></button>
+              <button type="button" data-act="fxPanel">Function list</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="docs-right">
+        <button type="button" class="gs-btn" id="btnOpenCalcTop" title="Calculator">🖩</button>
+        <button type="button" class="gs-btn primary" id="btnShareFake" title="Download">Download</button>
+        <div class="avatar" title="You">Y</div>
       </div>
     </div>
 
-    <!-- Ribbon -->
-    <div class="ribbon">
-      <div class="ribbon-tabs">
-        <button type="button" class="ribbon-tab file-tab" data-ribbon="file">Tệp</button>
-        <button type="button" class="ribbon-tab active" data-ribbon="home">Trang chủ</button>
-        <button type="button" class="ribbon-tab" data-ribbon="insert">Chèn</button>
-        <button type="button" class="ribbon-tab" data-ribbon="formulas">Công thức</button>
-        <button type="button" class="ribbon-tab" data-ribbon="calc">Tính toán</button>
-        <button type="button" class="ribbon-tab" data-ribbon="data">Dữ liệu</button>
-        <button type="button" class="ribbon-tab" data-ribbon="view">Xem</button>
-        <button type="button" class="ribbon-tab" data-ribbon="calculator" id="tabCalculator">🖩 Máy tính</button>
-      </div>
-
-      <!-- HOME -->
-      <div class="ribbon-body active" id="ribbon-home">
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnPaste" title="Dán (Ctrl+V)"><span class="ico">📋</span>Dán</button>
-            <div class="r-stack">
-              <button type="button" class="rbtn sm" id="btnCut" title="Cắt (Ctrl+X)"><span class="ico">✂</span> Cắt</button>
-              <button type="button" class="rbtn sm" id="btnCopy" title="Sao chép (Ctrl+C)"><span class="ico">📄</span> Sao chép</button>
-              <button type="button" class="rbtn sm" id="btnFormatPainter" title="Sao chép định dạng"><span class="ico">🖌️</span> Định dạng</button>
-            </div>
-          </div>
-          <div class="r-group-label">Clipboard</div>
-        </div>
-
-        <div class="r-group">
-          <div class="r-group-body">
-            <div class="r-stack">
-              <div class="r-row">
-                <select class="r-select font-family" id="fontFamily" title="Phông chữ">
-                  <option value="Segoe UI">Segoe UI</option>
-                  <option value="Calibri">Calibri</option>
-                  <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Consolas">Consolas</option>
-                  <option value="Courier New">Courier New</option>
-                  <option value="Tahoma">Tahoma</option>
-                  <option value="Verdana">Verdana</option>
-                </select>
-                <select class="r-select font-size" id="fontSize" title="Cỡ chữ">
-                  <option>9</option><option>10</option><option>11</option>
-                  <option selected>12</option><option>13</option><option>14</option>
-                  <option>16</option><option>18</option><option>20</option>
-                  <option>24</option><option>28</option><option>36</option>
-                </select>
-              </div>
-              <div class="r-row">
-                <button type="button" class="rbtn sm" id="btnBold" title="Đậm (Ctrl+B)"><b>B</b></button>
-                <button type="button" class="rbtn sm" id="btnItalic" title="Nghiêng (Ctrl+I)"><i>I</i></button>
-                <button type="button" class="rbtn sm" id="btnUnderline" title="Gạch dưới (Ctrl+U)"><u>U</u></button>
-                <span style="width:4px"></span>
-                <label class="color-wrap rbtn sm" title="Màu chữ">
-                  <span>A</span>
-                  <span class="swatch" id="swatchColor" style="background:#000"></span>
-                  <input type="color" id="textColor" value="#000000" />
-                </label>
-                <label class="color-wrap rbtn sm" title="Màu nền">
-                  <span>🎨</span>
-                  <span class="swatch" id="swatchFill" style="background:#ffff00"></span>
-                  <input type="color" id="fillColor" value="#ffff00" />
-                </label>
-              </div>
-            </div>
-          </div>
-          <div class="r-group-label">Phông chữ</div>
-        </div>
-
-        <div class="r-group">
-          <div class="r-group-body">
-            <div class="r-stack">
-              <div class="r-row">
-                <button type="button" class="rbtn sm" id="btnAlignLeft" title="Căn trái">⫷</button>
-                <button type="button" class="rbtn sm" id="btnAlignCenter" title="Căn giữa">☰</button>
-                <button type="button" class="rbtn sm" id="btnAlignRight" title="Căn phải">⫸</button>
-              </div>
-              <div class="r-row">
-                <button type="button" class="rbtn sm" id="btnWrap" title="Xuống dòng">↩ Wrap</button>
-                <button type="button" class="rbtn sm" id="btnMerge" title="Gộp ô (hiển thị)">⊞ Gộp</button>
-              </div>
-            </div>
-          </div>
-          <div class="r-group-label">Căn lề</div>
-        </div>
-
-        <div class="r-group">
-          <div class="r-group-body">
-            <div class="r-stack">
-              <select class="r-select num-fmt" id="numFmt" title="Định dạng số">
-                <option value="general">Chung</option>
-                <option value="number">Số</option>
-                <option value="currency">Tiền tệ ₫</option>
-                <option value="percent">Phần trăm %</option>
-                <option value="date">Ngày</option>
-                <option value="text">Văn bản</option>
-              </select>
-              <div class="r-row">
-                <button type="button" class="rbtn sm" id="btnPct" title="Phần trăm">%</button>
-                <button type="button" class="rbtn sm" id="btnComma" title="Dấu phân cách hàng nghìn">,</button>
-                <button type="button" class="rbtn sm" id="btnDecMore" title="Thêm số thập phân">.0↑</button>
-                <button type="button" class="rbtn sm" id="btnDecLess" title="Bớt số thập phân">.0↓</button>
-              </div>
-            </div>
-          </div>
-          <div class="r-group-label">Số</div>
-        </div>
-
-        <div class="r-group">
-          <div class="r-group-body">
-            <div class="r-stack">
-              <div class="r-row">
-                <button type="button" class="rbtn sm" id="btnBorderAll" title="Viền ngoài">▢</button>
-                <button type="button" class="rbtn sm" id="btnBorderBottom" title="Viền dưới">▁</button>
-                <button type="button" class="rbtn sm" id="btnBorderNone" title="Xóa viền">□</button>
-              </div>
-              <div class="r-row">
-                <button type="button" class="rbtn sm" id="btnClearFmt" title="Xóa định dạng">清除</button>
-                <button type="button" class="rbtn sm" id="btnClearAll" title="Xóa hết">🗑</button>
-              </div>
-            </div>
-          </div>
-          <div class="r-group-label">Kiểu</div>
-        </div>
-
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnAutoSum" title="Tổng tự động"><span class="ico">∑</span>Tổng</button>
-            <div class="r-stack">
-              <button type="button" class="rbtn sm" id="btnSortAsc" title="A→Z">A↓</button>
-              <button type="button" class="rbtn sm" id="btnSortDesc" title="Z→A">Z↓</button>
-              <button type="button" class="rbtn sm" id="btnFind" title="Tìm (Ctrl+F)">🔍</button>
-            </div>
-          </div>
-          <div class="r-group-label">Chỉnh sửa</div>
-        </div>
-      </div>
-
-      <!-- INSERT -->
-      <div class="ribbon-body" id="ribbon-insert">
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnAddRow" title="Chèn hàng"><span class="ico">＋</span>Hàng</button>
-            <button type="button" class="rbtn lg" id="btnAddCol" title="Chèn cột"><span class="ico">＋</span>Cột</button>
-            <button type="button" class="rbtn lg" id="btnAddSheet" title="Chèn sheet"><span class="ico">📄</span>Sheet</button>
-          </div>
-          <div class="r-group-label">Chèn</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnDelRow" title="Xóa hàng"><span class="ico">−</span>Xóa hàng</button>
-            <button type="button" class="rbtn lg" id="btnDelCol" title="Xóa cột"><span class="ico">−</span>Xóa cột</button>
-          </div>
-          <div class="r-group-label">Xóa</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnLink" title="Chèn liên kết giả"><span class="ico">🔗</span>Liên kết</button>
-            <button type="button" class="rbtn lg" id="btnComment" title="Ghi chú ô"><span class="ico">💬</span>Ghi chú</button>
-          </div>
-          <div class="r-group-label">Liên kết</div>
-        </div>
-      </div>
-
-      <!-- FORMULAS -->
-      <div class="ribbon-body" id="ribbon-formulas">
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" data-fx="SUM"><span class="ico">∑</span>SUM</button>
-            <button type="button" class="rbtn lg" data-fx="AVERAGE"><span class="ico">x̄</span>AVERAGE</button>
-            <button type="button" class="rbtn lg" data-fx="COUNT"><span class="ico">#</span>COUNT</button>
-            <button type="button" class="rbtn lg" data-fx="MIN"><span class="ico">↓</span>MIN</button>
-            <button type="button" class="rbtn lg" data-fx="MAX"><span class="ico">↑</span>MAX</button>
-            <button type="button" class="rbtn lg" data-fx="MEDIAN"><span class="ico">M</span>MEDIAN</button>
-            <button type="button" class="rbtn lg" data-fx="PRODUCT"><span class="ico">Π</span>PRODUCT</button>
-            <button type="button" class="rbtn lg" data-fx="STDEV"><span class="ico">σ</span>STDEV</button>
-          </div>
-          <div class="r-group-label">Thống kê</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" data-fx="IF"><span class="ico">?</span>IF</button>
-            <button type="button" class="rbtn lg" data-fx="ROUND"><span class="ico">≈</span>ROUND</button>
-            <button type="button" class="rbtn lg" data-fx="ABS"><span class="ico">|x|</span>ABS</button>
-            <button type="button" class="rbtn lg" data-fx="SQRT"><span class="ico">√</span>SQRT</button>
-            <button type="button" class="rbtn lg" data-fx="POWER"><span class="ico">xⁿ</span>POWER</button>
-            <button type="button" class="rbtn lg" data-fx="MOD"><span class="ico">%</span>MOD</button>
-          </div>
-          <div class="r-group-label">Toán học</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" data-fx="PMT"><span class="ico">$</span>PMT</button>
-            <button type="button" class="rbtn lg" data-fx="FV"><span class="ico">FV</span>FV</button>
-            <button type="button" class="rbtn lg" data-fx="PV"><span class="ico">PV</span>PV</button>
-            <button type="button" class="rbtn lg" data-fx="NPV"><span class="ico">N</span>NPV</button>
-          </div>
-          <div class="r-group-label">Tài chính</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnShowFormulas" title="Hiện công thức"><span class="ico">ƒx</span>Hiện CT</button>
-            <button type="button" class="rbtn lg" id="btnOpenCalc2" title="Mở máy tính"><span class="ico">🖩</span>Máy tính</button>
-          </div>
-          <div class="r-group-label">Công cụ</div>
-        </div>
-      </div>
-
-      <!-- CALC TOOLS -->
-      <div class="ribbon-body" id="ribbon-calc">
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" data-tool="sum"><span class="ico">∑</span>Tổng vùng</button>
-            <button type="button" class="rbtn lg" data-tool="avg"><span class="ico">x̄</span>Trung bình</button>
-            <button type="button" class="rbtn lg" data-tool="product"><span class="ico">Π</span>Tích</button>
-            <button type="button" class="rbtn lg" data-tool="count"><span class="ico">#</span>Đếm số</button>
-            <button type="button" class="rbtn lg" data-tool="minmax"><span class="ico">↕</span>Min/Max</button>
-          </div>
-          <div class="r-group-label">Thống kê vùng chọn</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" data-tool="pct"><span class="ico">%</span>% của tổng</button>
-            <button type="button" class="rbtn lg" data-tool="pctChange"><span class="ico">Δ%</span>% thay đổi</button>
-            <button type="button" class="rbtn lg" data-tool="running"><span class="ico">∑→</span>Cộng dồn</button>
-            <button type="button" class="rbtn lg" data-tool="diff"><span class="ico">Δ</span>Hiệu số</button>
-          </div>
-          <div class="r-group-label">Phần trăm &amp; dãy</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" data-tool="vatAdd" title="Cộng VAT 10%"><span class="ico">＋</span>+VAT 10%</button>
-            <button type="button" class="rbtn lg" data-tool="vatRem" title="Bỏ VAT 10%"><span class="ico">−</span>−VAT 10%</button>
-            <button type="button" class="rbtn lg" data-tool="vatCustom"><span class="ico">%</span>VAT tùy chọn</button>
-            <button type="button" class="rbtn lg" data-tool="margin"><span class="ico">📈</span>Lãi gộp</button>
-          </div>
-          <div class="r-group-label">Thuế &amp; lợi nhuận</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" data-tool="interest"><span class="ico">💰</span>Lãi đơn</button>
-            <button type="button" class="rbtn lg" data-tool="compound"><span class="ico">📊</span>Lãi kép</button>
-            <button type="button" class="rbtn lg" data-tool="loan"><span class="ico">🏦</span>Trả góp</button>
-            <button type="button" class="rbtn lg" data-tool="discount"><span class="ico">🏷</span>Giảm giá</button>
-          </div>
-          <div class="r-group-label">Tài chính nhanh</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnOpenCalc" title="Mở máy tính"><span class="ico">🖩</span>Máy tính</button>
-            <button type="button" class="rbtn lg" data-tool="evaluate"><span class="ico">=</span>Tính biểu thức</button>
-          </div>
-          <div class="r-group-label">Máy tính</div>
-        </div>
-      </div>
-
-      <!-- DATA -->
-      <div class="ribbon-body" id="ribbon-data">
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnSortAsc2" title="A→Z"><span class="ico">A↓</span>Tăng dần</button>
-            <button type="button" class="rbtn lg" id="btnSortDesc2" title="Z→A"><span class="ico">Z↓</span>Giảm dần</button>
-          </div>
-          <div class="r-group-label">Sắp xếp</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnFind2" title="Tìm"><span class="ico">🔍</span>Tìm</button>
-            <button type="button" class="rbtn lg" id="btnReplace" title="Thay thế"><span class="ico">⇄</span>Thay thế</button>
-          </div>
-          <div class="r-group-label">Dữ liệu</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnTextToCol" title="Tách cột theo dấu phẩy"><span class="ico">▤</span>Tách cột</button>
-          </div>
-          <div class="r-group-label">Công cụ</div>
-        </div>
-      </div>
-
-      <!-- VIEW -->
-      <div class="ribbon-body" id="ribbon-view">
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnFreeze" title="Ghim hàng đầu"><span class="ico">📌</span>Ghim header</button>
-            <button type="button" class="rbtn lg" id="btnGridlines" title="Đường lưới"><span class="ico">▦</span>Đường lưới</button>
-          </div>
-          <div class="r-group-label">Cửa sổ</div>
-        </div>
-        <div class="r-group">
-          <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnZoomIn" title="Phóng to"><span class="ico">＋</span>Phóng to</button>
-            <button type="button" class="rbtn lg" id="btnZoomOut" title="Thu nhỏ"><span class="ico">−</span>Thu nhỏ</button>
-            <button type="button" class="rbtn lg" id="btnZoom100" title="100%"><span class="ico">1:1</span>100%</button>
-          </div>
-          <div class="r-group-label">Thu phóng</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- File backstage -->
-    <div class="backstage" id="backstage">
-      <div class="backstage-nav">
-        <button type="button" id="bsBack">← Quay lại</button>
-        <button type="button" class="active" data-bs="new">Mới</button>
-        <button type="button" data-bs="open">Mở</button>
-        <button type="button" data-bs="save">Lưu</button>
-        <button type="button" data-bs="export">Xuất</button>
-        <button type="button" data-bs="info">Thông tin</button>
-      </div>
-      <div class="backstage-main" id="backstageMain">
-        <!-- filled by JS -->
-      </div>
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button type="button" class="tbtn" id="btnUndo" title="Undo (Ctrl+Z)">↩</button>
+      <button type="button" class="tbtn" id="btnRedo" title="Redo (Ctrl+Y)">↪</button>
+      <button type="button" class="tbtn" id="btnPrintFake" title="Print">🖨</button>
+      <div class="tb-sep"></div>
+      <select class="tb-select zoom" id="zoomSelect" title="Zoom">
+        <option value="0.5">50%</option>
+        <option value="0.75">75%</option>
+        <option value="1" selected>100%</option>
+        <option value="1.25">125%</option>
+        <option value="1.5">150%</option>
+        <option value="2">200%</option>
+      </select>
+      <div class="tb-sep"></div>
+      <select class="tb-select font" id="fontFamily" title="Font">
+        <option value="Arial">Arial</option>
+        <option value="Roboto" selected>Roboto</option>
+        <option value="Calibri">Calibri</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Consolas">Consolas</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Verdana">Verdana</option>
+      </select>
+      <select class="tb-select size" id="fontSize" title="Font size">
+        <option>9</option><option selected>10</option><option>11</option>
+        <option>12</option><option>14</option><option>18</option>
+        <option>24</option><option>36</option>
+      </select>
+      <div class="tb-sep"></div>
+      <button type="button" class="tbtn" id="btnBold" title="Bold (Ctrl+B)"><b>B</b></button>
+      <button type="button" class="tbtn" id="btnItalic" title="Italic (Ctrl+I)"><i>I</i></button>
+      <button type="button" class="tbtn" id="btnUnderline" title="Underline (Ctrl+U)"><u>U</u></button>
+      <label class="color-wrap tbtn" title="Text color">
+        <span>A</span>
+        <span class="swatch" id="swatchColor" style="background:#000"></span>
+        <input type="color" id="textColor" value="#000000" />
+      </label>
+      <label class="color-wrap tbtn" title="Fill color">
+        <span>🪣</span>
+        <span class="swatch" id="swatchFill" style="background:#ffff00"></span>
+        <input type="color" id="fillColor" value="#ffff00" />
+      </label>
+      <div class="tb-sep"></div>
+      <button type="button" class="tbtn" id="btnBorderAll" title="Borders">▢</button>
+      <button type="button" class="tbtn" id="btnMerge" title="Merge">⊞</button>
+      <div class="tb-sep"></div>
+      <button type="button" class="tbtn" id="btnAlignLeft" title="Align left">⫷</button>
+      <button type="button" class="tbtn" id="btnAlignCenter" title="Align center">☰</button>
+      <button type="button" class="tbtn" id="btnAlignRight" title="Align right">⫸</button>
+      <button type="button" class="tbtn" id="btnWrap" title="Wrap text">↩</button>
+      <div class="tb-sep"></div>
+      <select class="tb-select" id="numFmt" title="Number format" style="width:100px">
+        <option value="general">Automatic</option>
+        <option value="number">Number</option>
+        <option value="currency">Currency ₫</option>
+        <option value="percent">Percent</option>
+        <option value="date">Date</option>
+        <option value="text">Plain text</option>
+      </select>
+      <button type="button" class="tbtn" id="btnPct" title="Format as percent">%</button>
+      <button type="button" class="tbtn" id="btnDecLess" title="Decrease decimal">.0</button>
+      <button type="button" class="tbtn" id="btnDecMore" title="Increase decimal">.00</button>
+      <div class="tb-sep"></div>
+      <button type="button" class="tbtn wide" id="btnAutoSum" title="Functions / AutoSum">ƒx ▾</button>
+      <button type="button" class="tbtn" id="btnFilterFake" title="Create a filter">▽</button>
+      <div class="tb-sep"></div>
+      <button type="button" class="tbtn on" id="btnFxToggle" title="Function suggestions">∑?</button>
+      <button type="button" class="tbtn" id="btnOpenCalc" title="Calculator">🖩</button>
+      <button type="button" class="tbtn" id="btnFind" title="Find (Ctrl+F)">🔍</button>
     </div>
 
     <!-- Find -->
     <div class="find-bar" id="findBar">
-      <label>Tìm</label>
-      <input type="text" id="findInput" placeholder="Từ khóa…" />
+      <label>Find</label>
+      <input type="text" id="findInput" placeholder="Find in sheet" />
       <button class="btn" id="findPrev">↑</button>
       <button class="btn" id="findNext">↓</button>
       <span class="find-count" id="findCount"></span>
       <span id="replaceGroup" style="display:none;align-items:center;gap:8px">
-        <label>Thay</label>
-        <input type="text" id="replaceInput" placeholder="Thay bằng…" />
-        <button class="btn" id="btnReplaceOne">Thay</button>
-        <button class="btn" id="btnReplaceAll">Tất cả</button>
+        <label>Replace</label>
+        <input type="text" id="replaceInput" />
+        <button class="btn" id="btnReplaceOne">Replace</button>
+        <button class="btn" id="btnReplaceAll">All</button>
       </span>
       <button class="btn" id="findClose">✕</button>
     </div>
@@ -360,47 +229,79 @@
     <!-- Formula bar -->
     <div class="formula-bar">
       <div class="name-box" id="cellRef">A1</div>
-      <div class="fx-btns">
-        <button type="button" class="cancel" id="fxCancel" title="Hủy (Esc)">✕</button>
-        <button type="button" class="ok" id="fxOk" title="Xác nhận (Enter)">✓</button>
-      </div>
-      <div class="fx-label">ƒx</div>
-      <input type="text" id="formulaInput" spellcheck="false" autocomplete="off" placeholder="Nhập giá trị hoặc công thức (=SUM(A1:A10))" />
+      <div class="fx-label" id="fxLabelBtn" title="Insert function">ƒx</div>
+      <input type="text" id="formulaInput" spellcheck="false" autocomplete="off" placeholder="Enter text or formula" />
     </div>
 
-    <!-- Grid -->
-    <div class="sheet-wrap" id="sheetWrap">
-      <div class="sheet" id="sheet"></div>
-      <div class="sel-overlay" id="selOverlay"></div>
-      <div class="fill-handle" id="fillHandle" title="Kéo để điền"></div>
-      <div class="hint show" id="hint">
-        <div class="hint-box">
-          <h2>HTML Excel</h2>
-          <p>
-            Ứng dụng bảng tính giống Excel — mở <strong>XLSX / XLS / ODS / CSV</strong>,
-            định dạng ô, công thức, nhiều sheet.<br />
-            Copy–paste: <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> · Công thức: <kbd>=SUM(A1:A5)</kbd>
-          </p>
-          <div class="hint-actions">
-            <button class="btn primary" id="btnOpenHint">📂 Mở file</button>
-            <button class="btn" id="btnSample">✨ Dữ liệu mẫu</button>
-            <button class="btn" id="btnBlank">Sổ làm việc trống</button>
+    <!-- Autocomplete dropdown -->
+    <div class="fx-suggest" id="fxSuggest"></div>
+
+    <!-- Workspace -->
+    <div class="workspace">
+      <div class="sheet-wrap" id="sheetWrap">
+        <div class="sheet" id="sheet"></div>
+        <div class="sel-overlay" id="selOverlay"></div>
+        <div class="fill-handle" id="fillHandle" title="Drag to fill"></div>
+        <div class="hint show" id="hint">
+          <div class="hint-box">
+            <div class="logo-big">
+              <svg width="56" height="56" viewBox="0 0 48 48">
+                <path fill="#0F9D58" d="M8 4h20l12 12v28a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/>
+                <path fill="#87CEAC" d="M28 4v10a2 2 0 0 0 2 2h10"/>
+                <path fill="#fff" d="M14 22h20v3H14zm0 7h20v3H14zm0 7h12v3H14z"/>
+              </svg>
+            </div>
+            <h2>HTML Sheets</h2>
+            <p>
+              Giao diện giống <strong>Google Sheets</strong> — mở XLSX / CSV, công thức, định dạng.<br />
+              Gõ <kbd>=</kbd> để gợi ý hàm · Copy/Paste: <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd>
+            </p>
+            <div class="hint-actions">
+              <button class="btn primary" id="btnOpenHint">Open file</button>
+              <button class="btn" id="btnSample">Try sample</button>
+              <button class="btn" id="btnBlank">Blank spreadsheet</button>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Function help panel (tab) -->
+      <div class="fx-panel open" id="fxPanel">
+        <div class="fx-panel-head">
+          <span>Functions</span>
+          <button type="button" id="fxPanelClose" title="Close">✕</button>
+        </div>
+        <div class="fx-search">
+          <input type="search" id="fxSearch" placeholder="Search functions…" autocomplete="off" />
+        </div>
+        <div class="fx-cats" id="fxCats"></div>
+        <div class="fx-list" id="fxList"></div>
+        <div class="fx-detail" id="fxDetail">
+          Chọn hàm hoặc gõ <strong>=</strong> trên ô / thanh công thức để xem gợi ý.
+        </div>
+      </div>
+
+      <div class="side-rail">
+        <button type="button" class="on" id="railFx" title="Functions">ƒx</button>
+        <button type="button" id="railCalc" title="Calculator">🖩</button>
+        <span class="rail-label">TOOLS</span>
+      </div>
     </div>
 
-    <!-- Bottom: sheets + status -->
+    <!-- Bottom tabs + status -->
     <div class="bottom-bar">
+      <div class="sheet-nav">
+        <button type="button" id="btnSheetMenu" title="All sheets">☰</button>
+      </div>
       <div class="sheet-tabs" id="sheetTabs"></div>
-    </div>
-    <div class="status-bar">
-      <span class="ready" id="statusReady">Sẵn sàng</span>
-      <span id="statusStats"></span>
-      <div class="zoom-ctrl">
-        <button type="button" id="zoomOut">−</button>
-        <span id="zoomLabel">100%</span>
-        <button type="button" id="zoomIn">＋</button>
+      <div class="status-bar">
+        <span class="ready" id="statusReady">Ready</span>
+        <span id="statusStats"></span>
+        <div class="zoom-ctrl">
+          <button type="button" id="zoomOut">−</button>
+          <span id="zoomLabel">100%</span>
+          <button type="button" id="zoomIn">＋</button>
+        </div>
       </div>
     </div>
   </div>
@@ -408,13 +309,31 @@
   <div class="toast" id="toast"></div>
   <input type="file" id="fileInput" hidden />
 
-  <!-- Floating calculator -->
-  <div class="calc-panel" id="calcPanel" role="dialog" aria-label="Máy tính">
+  <!-- Context menu -->
+  <div class="ctx-menu" id="ctxMenu">
+    <button type="button" data-act="cut">Cut <kbd>Ctrl+X</kbd></button>
+    <button type="button" data-act="copy">Copy <kbd>Ctrl+C</kbd></button>
+    <button type="button" data-act="paste">Paste <kbd>Ctrl+V</kbd></button>
+    <div class="sep"></div>
+    <button type="button" data-act="insertRow">Insert row</button>
+    <button type="button" data-act="insertCol">Insert column</button>
+    <button type="button" data-act="deleteRow">Delete row</button>
+    <button type="button" data-act="deleteCol">Delete column</button>
+    <div class="sep"></div>
+    <button type="button" data-act="clear">Clear <kbd>Del</kbd></button>
+    <button type="button" data-act="clearFmt">Clear formatting</button>
+    <div class="sep"></div>
+    <button type="button" data-act="autoSum">Insert =SUM</button>
+    <button type="button" data-act="fxPanel">Function list</button>
+  </div>
+
+  <!-- Calculator -->
+  <div class="calc-panel" id="calcPanel">
     <div class="calc-head">
-      <span class="calc-title">🖩 Máy tính</span>
+      <span class="calc-title">Calculator</span>
       <div class="calc-head-actions">
-        <button type="button" id="calcMode" title="Đổi chế độ">Khoa học</button>
-        <button type="button" id="calcClose" title="Đóng">✕</button>
+        <button type="button" id="calcMode">Scientific</button>
+        <button type="button" id="calcClose">✕</button>
       </div>
     </div>
     <div class="calc-expr" id="calcExpr">&nbsp;</div>
@@ -447,86 +366,98 @@
       <button type="button" data-calc="CE" class="warn">CE</button>
       <button type="button" data-calc="BS" class="warn">⌫</button>
       <button type="button" data-calc="/" class="op">÷</button>
-
       <button type="button" data-calc="7">7</button>
       <button type="button" data-calc="8">8</button>
       <button type="button" data-calc="9">9</button>
       <button type="button" data-calc="*" class="op">×</button>
-
       <button type="button" data-calc="4">4</button>
       <button type="button" data-calc="5">5</button>
       <button type="button" data-calc="6">6</button>
       <button type="button" data-calc="-" class="op">−</button>
-
       <button type="button" data-calc="1">1</button>
       <button type="button" data-calc="2">2</button>
       <button type="button" data-calc="3">3</button>
       <button type="button" data-calc="+" class="op">+</button>
-
       <button type="button" data-calc="±">±</button>
       <button type="button" data-calc="0">0</button>
       <button type="button" data-calc=".">.</button>
       <button type="button" data-calc="=" class="eq">=</button>
-
       <button type="button" data-calc="%" class="op">%</button>
     </div>
     <div class="calc-actions">
-      <button type="button" class="btn primary" id="calcInsert">⬇ Chèn số vào ô</button>
-      <button type="button" class="btn" id="calcInsertExpr">ƒx Chèn công thức</button>
+      <button type="button" class="btn primary" id="calcInsert">Insert value</button>
+      <button type="button" class="btn" id="calcInsertExpr">Insert formula</button>
     </div>
     <div class="calc-history" id="calcHistory"></div>
   </div>
 
-  <!-- Context menu -->
-  <div class="ctx-menu" id="ctxMenu">
-    <button type="button" data-act="cut">Cắt <kbd>Ctrl+X</kbd></button>
-    <button type="button" data-act="copy">Sao chép <kbd>Ctrl+C</kbd></button>
-    <button type="button" data-act="paste">Dán <kbd>Ctrl+V</kbd></button>
-    <div class="sep"></div>
-    <button type="button" data-act="insertRow">Chèn hàng</button>
-    <button type="button" data-act="insertCol">Chèn cột</button>
-    <button type="button" data-act="deleteRow">Xóa hàng</button>
-    <button type="button" data-act="deleteCol">Xóa cột</button>
-    <div class="sep"></div>
-    <button type="button" data-act="clear">Xóa nội dung <kbd>Del</kbd></button>
-    <button type="button" data-act="clearFmt">Xóa định dạng</button>
-    <div class="sep"></div>
-    <button type="button" data-act="autoSum">Chèn =SUM</button>
+  <!-- File dialog (backstage simplified) -->
+  <div class="backstage" id="backstage">
+    <div class="backstage-inner">
+      <div class="backstage-nav">
+        <button type="button" id="bsBack">← Close</button>
+        <button type="button" class="active" data-bs="new">New</button>
+        <button type="button" data-bs="open">Open</button>
+        <button type="button" data-bs="save">Download</button>
+        <button type="button" data-bs="info">Details</button>
+      </div>
+      <div class="backstage-main" id="backstageMain"></div>
+    </div>
   </div>
 
   <div class="modal-backdrop" id="helpModal">
     <div class="modal">
       <header>
-        <span>HTML Excel — Trợ giúp</span>
+        <span>Keyboard shortcuts</span>
         <button type="button" class="close-x" id="helpClose">✕</button>
       </header>
       <div class="body">
         <table class="shortcuts-table">
-          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd> / <kbd>S</kbd></td><td>Mở / Lưu</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></td><td>Copy / Cắt / Dán (giống Sheets)</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd> <kbd>I</kbd> <kbd>U</kbd></td><td>Đậm / Nghiêng / Gạch dưới</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Hoàn tác / Làm lại</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>H</kbd></td><td>Tìm / Thay thế</td></tr>
-          <tr><td><kbd>F2</kbd> · <kbd>Enter</kbd></td><td>Sửa ô</td></tr>
-          <tr><td><kbd>Alt</kbd>+<kbd>=</kbd></td><td>Tổng tự động (AutoSum)</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd></td><td>Mở máy tính</td></tr>
-          <tr><td>Chuột phải</td><td>Menu ngữ cảnh</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd> / <kbd>S</kbd> / <kbd>N</kbd></td><td>Open / Download / New</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></td><td>Copy / Cut / Paste</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd> <kbd>I</kbd> <kbd>U</kbd></td><td>Bold / Italic / Underline</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Undo / Redo</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>H</kbd></td><td>Find / Replace</td></tr>
+          <tr><td><kbd>Alt</kbd>+<kbd>=</kbd></td><td>AutoSum</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd></td><td>Calculator</td></tr>
+          <tr><td><kbd>=</kbd> then type</td><td>Function suggestions</td></tr>
         </table>
         <ul class="features-list">
-          <li>Ribbon: Trang chủ, Chèn, Công thức, <strong>Tính toán</strong>, Dữ liệu, Xem, Máy tính</li>
-          <li>Máy tính nổi: cơ bản + khoa học, chèn số/công thức vào ô</li>
-          <li>Công cụ: VAT, lãi đơn/kép, trả góp, % tổng, cộng dồn…</li>
-          <li>XLSX / XLS / ODS / CSV · nhiều sheet · hàm tài chính PMT/FV/NPV</li>
+          <li>Google Sheets–style UI: menus, toolbar, blue selection, green tabs</li>
+          <li>Side panel Functions + autocomplete when typing formulas</li>
+          <li>XLSX / CSV / ODS · multi-sheet · calculator · finance tools</li>
         </ul>
       </div>
     </div>
+  </div>
+
+  <!-- Hidden legacy IDs used by app.js (stubs) -->
+  <div style="display:none" aria-hidden="true">
+    <button id="btnCut"></button><button id="btnCopy"></button><button id="btnPaste"></button>
+    <button id="btnFormatPainter"></button><button id="btnClearFmt"></button><button id="btnClearAll"></button>
+    <button id="btnBorderBottom"></button><button id="btnBorderNone"></button>
+    <button id="btnComma"></button><button id="btnSortAsc"></button><button id="btnSortDesc"></button>
+    <button id="btnSortAsc2"></button><button id="btnSortDesc2"></button>
+    <button id="btnFind2"></button><button id="btnReplace"></button>
+    <button id="btnAddRow"></button><button id="btnAddCol"></button><button id="btnAddSheet"></button>
+    <button id="btnDelRow"></button><button id="btnDelCol"></button>
+    <button id="btnLink"></button><button id="btnComment"></button>
+    <button id="btnShowFormulas"></button><button id="btnOpenCalc2"></button>
+    <button id="btnFreeze"></button><button id="btnGridlines"></button>
+    <button id="btnZoomIn"></button><button id="btnZoomOut"></button><button id="btnZoom100"></button>
+    <button id="btnTheme"></button><button id="btnHelp"></button>
+    <button id="btnTextToCol"></button>
+    <button id="fxOk"></button><button id="fxCancel"></button>
+    <button id="btnShare"></button>
   </div>
 
   <script src="js/vendor/xlsx.full.min.js"></script>
   <script src="js/csv.js"></script>
   <script src="js/io.js"></script>
   <script src="js/formulas.js"></script>
+  <script src="js/fx-catalog.js"></script>
   <script src="js/calc.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/sheets-ui.js"></script>
 </body>
 </html>

@@ -730,9 +730,15 @@
   function updateStatus() {
     const rg = getRange();
     const rr = rg.r2 - rg.r1 + 1, cc = rg.c2 - rg.c1 + 1;
-    fileNameEl.textContent = (dirty ? "● " : "") + (fileName || "Sổ làm việc chưa đặt tên");
-    statusReady.textContent = dirty ? "Đã chỉnh sửa" : "Sẵn sàng";
-    document.title = (dirty ? "* " : "") + (fileName || "HTML Excel") + " — HTML Excel";
+    const title = fileName || "Untitled spreadsheet";
+    if (fileNameEl) {
+      if (fileNameEl.tagName === "INPUT") fileNameEl.value = title;
+      else fileNameEl.textContent = (dirty ? "● " : "") + title;
+    }
+    const badge = document.getElementById("fileBadge");
+    if (badge) badge.textContent = dirty ? "Editing…" : (fileFormat || "Sheets").toUpperCase();
+    if (statusReady) statusReady.textContent = dirty ? "Editing" : "Ready";
+    document.title = (dirty ? "* " : "") + title + " - HTML Sheets";
 
     let sum = 0, count = 0, countA = 0, min = Infinity, max = -Infinity;
     for (let r = rg.r1; r <= rg.r2; r++) {
@@ -1590,6 +1596,12 @@
     applyColTemplate();
     paintSelection();
     updateStatus();
+    const zs = document.getElementById("zoomSelect");
+    if (zs) {
+      const opts = [...zs.options].map((o) => Number(o.value));
+      const nearest = opts.reduce((a, b) => (Math.abs(b - zoom) < Math.abs(a - zoom) ? b : a), 1);
+      zs.value = String(nearest);
+    }
   }
 
   // ── Ribbon / Backstage ──────────────────────────────────
@@ -1618,6 +1630,7 @@
   }
 
   function openBackstage(panel) {
+    if (!backstage) return;
     backstage.classList.add("open");
     renderBackstage(panel || "new");
     document.querySelectorAll(".backstage-nav button[data-bs]").forEach((b) => {
@@ -1625,13 +1638,8 @@
     });
   }
   function closeBackstage() {
+    if (!backstage) return;
     backstage.classList.remove("open");
-    document.querySelectorAll(".ribbon-tab").forEach((t) => {
-      t.classList.toggle("active", t.dataset.ribbon === "home");
-    });
-    document.querySelectorAll(".ribbon-body").forEach((b) => {
-      b.classList.toggle("active", b.id === "ribbon-home");
-    });
   }
 
   function renderBackstage(panel) {
@@ -1712,12 +1720,12 @@
           name: "Hướng dẫn",
           grid: [
             ["Tính năng", "Cách dùng"],
-            ["Ribbon Trang chủ", "Định dạng chữ, màu, căn lề, số"],
-            ["Công thức", "Gõ =SUM(A1:A5) hoặc nút ∑ AutoSum"],
-            ["Nhiều sheet", "Tab dưới lưới · nút + thêm sheet"],
-            ["Mở / Lưu", "Ribbon Tệp → Mở / Lưu (XLSX, CSV…)"],
-            ["Copy/Paste", "Ctrl+C / Ctrl+V giống Google Sheets"],
-            ["Chuột phải", "Menu: cắt, chèn hàng, AutoSum…"],
+            ["Toolbar", "Bold, fill, align, number formats"],
+            ["Formulas", "Type = for suggestions or open ƒx panel"],
+            ["Sheets", "Tabs at bottom · + to add sheet"],
+            ["File menu", "Open / Download XLSX, CSV, ODS"],
+            ["Copy/Paste", "Ctrl+C / Ctrl+V like Google Sheets"],
+            ["Right-click", "Cut, insert row, AutoSum…"],
           ],
         },
       ],
@@ -2007,6 +2015,9 @@
   document.querySelectorAll(".backstage-nav button[data-bs]").forEach((b) => {
     b.addEventListener("click", () => openBackstage(b.dataset.bs));
   });
+  backstage?.addEventListener("click", (e) => {
+    if (e.target === backstage) closeBackstage();
+  });
 
   document.getElementById("btnCut").onclick = () => copySelection(true);
   document.getElementById("btnCopy").onclick = () => copySelection(false);
@@ -2217,10 +2228,38 @@
       colWidths: padded.colWidths,
     }];
     activeSheetIndex = 0;
-    fileName = "";
+    fileName = "Untitled spreadsheet";
     fileFormat = "xlsx";
     applySheetState(workbookSheets[0]);
     renderSheetTabs();
     hint.classList.add("show");
   })();
+
+  // Public API for Sheets UI layer
+  window.SheetsApp = {
+    undo, redo, autoSum, openCalculator, openFind, closeFind,
+    copySelection, pasteSelection, deleteSelection, selectAll,
+    newWorkbook, openFile, saveAs, loadSample,
+    addRow, addCol, addWorkbookSheet, delRow, delCol,
+    sortByActiveCol, applyCalcTool, insertFx, applyStyleToSelection,
+    toggleStyle, setZoom, openBackstage, closeBackstage,
+    getActive: () => ({ r: activeR, c: activeC }),
+    getRaw, setCell, commitEdit, startEdit, markDirty, pushUndo,
+    refreshRange, updateFormulaBar, toast,
+    get fileName() { return fileName; },
+    set fileName(v) { fileName = v; updateStatus(); },
+    get freezeHeader() { return freezeHeader; },
+    set freezeHeader(v) { freezeHeader = v; sheet.classList.toggle("freeze-header", freezeHeader); },
+    get showGrid() { return showGrid; },
+    set showGrid(v) { showGrid = v; sheet.classList.toggle("no-grid", !showGrid); },
+    get showFormulas() { return showFormulas; },
+    set showFormulas(v) { showFormulas = v; refreshAll(); },
+    toggleTheme() {
+      const dark = document.documentElement.getAttribute("data-theme") === "dark";
+      if (dark) document.documentElement.removeAttribute("data-theme");
+      else document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("htmlexxcel-theme", dark ? "light" : "dark");
+    },
+    emptyStyle,
+  };
 })();
