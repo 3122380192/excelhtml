@@ -3,155 +3,376 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="HTML Excel — mở CSV/XLSX/XLS/ODS, chỉnh sửa như Excel, copy/paste như Google Sheets" />
-  <title>HTML Excel — Spreadsheet</title>
+  <meta name="description" content="HTML Excel — ứng dụng bảng tính giống Microsoft Excel trong trình duyệt" />
+  <title>HTML Excel</title>
   <link rel="stylesheet" href="css/styles.css" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23217346'/><text x='16' y='22' text-anchor='middle' fill='white' font-size='14' font-family='sans-serif' font-weight='bold'>XL</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='3' fill='%23217346'/><text x='16' y='22' text-anchor='middle' fill='white' font-size='13' font-family='Segoe UI' font-weight='bold'>X</text></svg>" />
 </head>
 <body>
-  <div class="toolbar">
-    <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="3" y="3" width="18" height="18" rx="2" fill="#217346"/>
-        <path d="M7 8h10M7 12h10M7 16h6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
-      </svg>
-      HTML Excel
-    </div>
-
-    <button class="btn primary" id="btnOpen" title="Mở file (Ctrl+O) — CSV, XLSX, XLS, ODS…">📂 Mở</button>
-    <div class="menu-wrap">
-      <button class="btn" data-menu="menuSave" title="Lưu file (Ctrl+S)">💾 Lưu ▾</button>
-      <div class="menu-drop" id="menuSave">
-        <button type="button" id="btnSave" data-fmt="auto">💾 Lưu (định dạng hiện tại)</button>
-        <div class="menu-sep"></div>
-        <button type="button" id="btnSaveXlsx" data-fmt="xlsx">📗 Excel (.xlsx)</button>
-        <button type="button" id="btnSaveXls" data-fmt="xls">📘 Excel 97-2003 (.xls)</button>
-        <button type="button" id="btnSaveOds" data-fmt="ods">📙 OpenDocument (.ods)</button>
-        <div class="menu-sep"></div>
-        <button type="button" id="btnSaveCsv" data-fmt="csv">📄 CSV (.csv)</button>
-        <button type="button" id="btnSaveTsv" data-fmt="tsv">📄 TSV (.tsv)</button>
+  <div class="app-main">
+    <!-- Title bar -->
+    <div class="titlebar">
+      <div class="logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="2" width="20" height="20" rx="2" fill="#fff" fill-opacity=".2"/>
+          <path d="M7 7h10M7 12h10M7 17h6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        HTML Excel
       </div>
-    </div>
-    <button class="btn" id="btnNew" title="Workbook trống mới">＋ Mới</button>
-
-    <div class="sep"></div>
-
-    <button class="btn icon" id="btnUndo" title="Hoàn tác (Ctrl+Z)" disabled>↩</button>
-    <button class="btn icon" id="btnRedo" title="Làm lại (Ctrl+Y)" disabled>↪</button>
-
-    <div class="sep"></div>
-
-    <button class="btn" id="btnCut" title="Cắt (Ctrl+X)">✂</button>
-    <button class="btn" id="btnCopy" title="Copy (Ctrl+C)">📋</button>
-    <button class="btn" id="btnPaste" title="Paste (Ctrl+V)">📥</button>
-
-    <div class="sep"></div>
-
-    <button class="btn" id="btnFind" title="Tìm (Ctrl+F)">🔍</button>
-    <button class="btn" id="btnReplace" title="Thay thế (Ctrl+H)">⇄</button>
-    <button class="btn" id="btnSortAsc" title="Sắp xếp cột đang chọn A→Z">A↓</button>
-    <button class="btn" id="btnSortDesc" title="Sắp xếp cột đang chọn Z→A">Z↓</button>
-
-    <div class="sep"></div>
-
-    <div class="menu-wrap">
-      <button class="btn" data-menu="menuInsert" title="Chèn / xóa">▦ Hàng/Cột ▾</button>
-      <div class="menu-drop" id="menuInsert">
-        <button type="button" id="btnAddRow">＋ Thêm hàng</button>
-        <button type="button" id="btnAddCol">＋ Thêm cột</button>
-        <div class="menu-sep"></div>
-        <button type="button" id="btnDelRow">− Xóa hàng chọn</button>
-        <button type="button" id="btnDelCol">− Xóa cột chọn</button>
+      <div class="doc-name" id="fileName">Sổ làm việc chưa đặt tên</div>
+      <div class="title-actions">
+        <button type="button" class="tbtn" id="btnTheme" title="Sáng / Tối">🌓</button>
+        <button type="button" class="tbtn" id="btnHelp" title="Trợ giúp (F1)">?</button>
       </div>
     </div>
 
-    <button class="btn" id="btnFreeze" title="Ghim hàng tiêu đề (sort giữ header)">📌 Ghim header</button>
-    <button class="btn icon" id="btnTheme" title="Đổi giao diện sáng/tối">🌓</button>
-    <button class="btn icon" id="btnHelp" title="Phím tắt (F1)">❓</button>
+    <!-- Ribbon -->
+    <div class="ribbon">
+      <div class="ribbon-tabs">
+        <button type="button" class="ribbon-tab file-tab" data-ribbon="file">Tệp</button>
+        <button type="button" class="ribbon-tab active" data-ribbon="home">Trang chủ</button>
+        <button type="button" class="ribbon-tab" data-ribbon="insert">Chèn</button>
+        <button type="button" class="ribbon-tab" data-ribbon="formulas">Công thức</button>
+        <button type="button" class="ribbon-tab" data-ribbon="data">Dữ liệu</button>
+        <button type="button" class="ribbon-tab" data-ribbon="view">Xem</button>
+      </div>
 
-    <div class="toolbar-right">
-      <span class="file-name" id="fileName">Chưa mở file</span>
-    </div>
-  </div>
+      <!-- HOME -->
+      <div class="ribbon-body active" id="ribbon-home">
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnPaste" title="Dán (Ctrl+V)"><span class="ico">📋</span>Dán</button>
+            <div class="r-stack">
+              <button type="button" class="rbtn sm" id="btnCut" title="Cắt (Ctrl+X)"><span class="ico">✂</span> Cắt</button>
+              <button type="button" class="rbtn sm" id="btnCopy" title="Sao chép (Ctrl+C)"><span class="ico">📄</span> Sao chép</button>
+              <button type="button" class="rbtn sm" id="btnFormatPainter" title="Sao chép định dạng"><span class="ico">🖌️</span> Định dạng</button>
+            </div>
+          </div>
+          <div class="r-group-label">Clipboard</div>
+        </div>
 
-  <div class="find-bar" id="findBar">
-    <label for="findInput">Tìm</label>
-    <input type="text" id="findInput" placeholder="Từ khóa…" />
-    <button class="btn" id="findPrev" title="Trước">↑</button>
-    <button class="btn" id="findNext" title="Sau">↓</button>
-    <span class="find-count" id="findCount"></span>
-    <span id="replaceGroup" style="display:none;align-items:center;gap:8px">
-      <label for="replaceInput">Thay</label>
-      <input type="text" id="replaceInput" placeholder="Thay bằng…" />
-      <button class="btn" id="btnReplaceOne">Thay</button>
-      <button class="btn" id="btnReplaceAll">Thay tất cả</button>
-    </span>
-    <button class="btn" id="findClose">✕</button>
-  </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <div class="r-stack">
+              <div class="r-row">
+                <select class="r-select font-family" id="fontFamily" title="Phông chữ">
+                  <option value="Segoe UI">Segoe UI</option>
+                  <option value="Calibri">Calibri</option>
+                  <option value="Arial">Arial</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Consolas">Consolas</option>
+                  <option value="Courier New">Courier New</option>
+                  <option value="Tahoma">Tahoma</option>
+                  <option value="Verdana">Verdana</option>
+                </select>
+                <select class="r-select font-size" id="fontSize" title="Cỡ chữ">
+                  <option>9</option><option>10</option><option>11</option>
+                  <option selected>12</option><option>13</option><option>14</option>
+                  <option>16</option><option>18</option><option>20</option>
+                  <option>24</option><option>28</option><option>36</option>
+                </select>
+              </div>
+              <div class="r-row">
+                <button type="button" class="rbtn sm" id="btnBold" title="Đậm (Ctrl+B)"><b>B</b></button>
+                <button type="button" class="rbtn sm" id="btnItalic" title="Nghiêng (Ctrl+I)"><i>I</i></button>
+                <button type="button" class="rbtn sm" id="btnUnderline" title="Gạch dưới (Ctrl+U)"><u>U</u></button>
+                <span style="width:4px"></span>
+                <label class="color-wrap rbtn sm" title="Màu chữ">
+                  <span>A</span>
+                  <span class="swatch" id="swatchColor" style="background:#000"></span>
+                  <input type="color" id="textColor" value="#000000" />
+                </label>
+                <label class="color-wrap rbtn sm" title="Màu nền">
+                  <span>🎨</span>
+                  <span class="swatch" id="swatchFill" style="background:#ffff00"></span>
+                  <input type="color" id="fillColor" value="#ffff00" />
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="r-group-label">Phông chữ</div>
+        </div>
 
-  <div class="formula-bar">
-    <div class="cell-ref" id="cellRef">A1</div>
-    <div class="fx-label" title="Công thức: =SUM(A1:A5)">ƒx</div>
-    <input type="text" id="formulaInput" spellcheck="false" autocomplete="off" placeholder="Nhập giá trị hoặc công thức, ví dụ =SUM(B2:B10)" />
-  </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <div class="r-stack">
+              <div class="r-row">
+                <button type="button" class="rbtn sm" id="btnAlignLeft" title="Căn trái">⫷</button>
+                <button type="button" class="rbtn sm" id="btnAlignCenter" title="Căn giữa">☰</button>
+                <button type="button" class="rbtn sm" id="btnAlignRight" title="Căn phải">⫸</button>
+              </div>
+              <div class="r-row">
+                <button type="button" class="rbtn sm" id="btnWrap" title="Xuống dòng">↩ Wrap</button>
+                <button type="button" class="rbtn sm" id="btnMerge" title="Gộp ô (hiển thị)">⊞ Gộp</button>
+              </div>
+            </div>
+          </div>
+          <div class="r-group-label">Căn lề</div>
+        </div>
 
-  <div class="sheet-wrap" id="sheetWrap">
-    <div class="sheet" id="sheet"></div>
-    <div class="sel-overlay" id="selOverlay"></div>
-    <div class="fill-handle" id="fillHandle" title="Kéo để fill"></div>
-    <div class="hint show" id="hint">
-      <div class="hint-box">
-        <h2>HTML Excel — bảng tính trong trình duyệt</h2>
-        <p>
-          Mở / kéo thả <strong>.xlsx · .xls · .ods · .csv · .tsv · .html</strong>.
-          Copy–paste nhiều ô giống Google Sheets
-          (<kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd>).<br />
-          Công thức: <kbd>=SUM(A1:A5)</kbd>, <kbd>=B2*C2</kbd>, <kbd>=AVERAGE(...)</kbd>
-        </p>
-        <div class="hint-actions">
-          <button class="btn primary" id="btnOpenHint">📂 Mở file</button>
-          <button class="btn" id="btnSample">✨ Dữ liệu mẫu</button>
+        <div class="r-group">
+          <div class="r-group-body">
+            <div class="r-stack">
+              <select class="r-select num-fmt" id="numFmt" title="Định dạng số">
+                <option value="general">Chung</option>
+                <option value="number">Số</option>
+                <option value="currency">Tiền tệ ₫</option>
+                <option value="percent">Phần trăm %</option>
+                <option value="date">Ngày</option>
+                <option value="text">Văn bản</option>
+              </select>
+              <div class="r-row">
+                <button type="button" class="rbtn sm" id="btnPct" title="Phần trăm">%</button>
+                <button type="button" class="rbtn sm" id="btnComma" title="Dấu phân cách hàng nghìn">,</button>
+                <button type="button" class="rbtn sm" id="btnDecMore" title="Thêm số thập phân">.0↑</button>
+                <button type="button" class="rbtn sm" id="btnDecLess" title="Bớt số thập phân">.0↓</button>
+              </div>
+            </div>
+          </div>
+          <div class="r-group-label">Số</div>
+        </div>
+
+        <div class="r-group">
+          <div class="r-group-body">
+            <div class="r-stack">
+              <div class="r-row">
+                <button type="button" class="rbtn sm" id="btnBorderAll" title="Viền ngoài">▢</button>
+                <button type="button" class="rbtn sm" id="btnBorderBottom" title="Viền dưới">▁</button>
+                <button type="button" class="rbtn sm" id="btnBorderNone" title="Xóa viền">□</button>
+              </div>
+              <div class="r-row">
+                <button type="button" class="rbtn sm" id="btnClearFmt" title="Xóa định dạng">清除</button>
+                <button type="button" class="rbtn sm" id="btnClearAll" title="Xóa hết">🗑</button>
+              </div>
+            </div>
+          </div>
+          <div class="r-group-label">Kiểu</div>
+        </div>
+
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnAutoSum" title="Tổng tự động"><span class="ico">∑</span>Tổng</button>
+            <div class="r-stack">
+              <button type="button" class="rbtn sm" id="btnSortAsc" title="A→Z">A↓</button>
+              <button type="button" class="rbtn sm" id="btnSortDesc" title="Z→A">Z↓</button>
+              <button type="button" class="rbtn sm" id="btnFind" title="Tìm (Ctrl+F)">🔍</button>
+            </div>
+          </div>
+          <div class="r-group-label">Chỉnh sửa</div>
+        </div>
+      </div>
+
+      <!-- INSERT -->
+      <div class="ribbon-body" id="ribbon-insert">
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnAddRow" title="Chèn hàng"><span class="ico">＋</span>Hàng</button>
+            <button type="button" class="rbtn lg" id="btnAddCol" title="Chèn cột"><span class="ico">＋</span>Cột</button>
+            <button type="button" class="rbtn lg" id="btnAddSheet" title="Chèn sheet"><span class="ico">📄</span>Sheet</button>
+          </div>
+          <div class="r-group-label">Chèn</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnDelRow" title="Xóa hàng"><span class="ico">−</span>Xóa hàng</button>
+            <button type="button" class="rbtn lg" id="btnDelCol" title="Xóa cột"><span class="ico">−</span>Xóa cột</button>
+          </div>
+          <div class="r-group-label">Xóa</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnLink" title="Chèn liên kết giả"><span class="ico">🔗</span>Liên kết</button>
+            <button type="button" class="rbtn lg" id="btnComment" title="Ghi chú ô"><span class="ico">💬</span>Ghi chú</button>
+          </div>
+          <div class="r-group-label">Liên kết</div>
+        </div>
+      </div>
+
+      <!-- FORMULAS -->
+      <div class="ribbon-body" id="ribbon-formulas">
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnFxSum" data-fx="SUM"><span class="ico">∑</span>SUM</button>
+            <button type="button" class="rbtn lg" id="btnFxAvg" data-fx="AVERAGE"><span class="ico">x̄</span>AVERAGE</button>
+            <button type="button" class="rbtn lg" id="btnFxCount" data-fx="COUNT"><span class="ico">#</span>COUNT</button>
+            <button type="button" class="rbtn lg" id="btnFxMin" data-fx="MIN"><span class="ico">↓</span>MIN</button>
+            <button type="button" class="rbtn lg" id="btnFxMax" data-fx="MAX"><span class="ico">↑</span>MAX</button>
+            <button type="button" class="rbtn lg" id="btnFxIf" data-fx="IF"><span class="ico">?</span>IF</button>
+          </div>
+          <div class="r-group-label">Thư viện hàm</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnShowFormulas" title="Hiện công thức"><span class="ico">ƒx</span>Hiện CT</button>
+          </div>
+          <div class="r-group-label">Kiểm tra</div>
+        </div>
+      </div>
+
+      <!-- DATA -->
+      <div class="ribbon-body" id="ribbon-data">
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnSortAsc2" title="A→Z"><span class="ico">A↓</span>Tăng dần</button>
+            <button type="button" class="rbtn lg" id="btnSortDesc2" title="Z→A"><span class="ico">Z↓</span>Giảm dần</button>
+          </div>
+          <div class="r-group-label">Sắp xếp</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnFind2" title="Tìm"><span class="ico">🔍</span>Tìm</button>
+            <button type="button" class="rbtn lg" id="btnReplace" title="Thay thế"><span class="ico">⇄</span>Thay thế</button>
+          </div>
+          <div class="r-group-label">Dữ liệu</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnTextToCol" title="Tách cột theo dấu phẩy"><span class="ico">▤</span>Tách cột</button>
+          </div>
+          <div class="r-group-label">Công cụ</div>
+        </div>
+      </div>
+
+      <!-- VIEW -->
+      <div class="ribbon-body" id="ribbon-view">
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnFreeze" title="Ghim hàng đầu"><span class="ico">📌</span>Ghim header</button>
+            <button type="button" class="rbtn lg" id="btnGridlines" title="Đường lưới"><span class="ico">▦</span>Đường lưới</button>
+          </div>
+          <div class="r-group-label">Cửa sổ</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnZoomIn" title="Phóng to"><span class="ico">＋</span>Phóng to</button>
+            <button type="button" class="rbtn lg" id="btnZoomOut" title="Thu nhỏ"><span class="ico">−</span>Thu nhỏ</button>
+            <button type="button" class="rbtn lg" id="btnZoom100" title="100%"><span class="ico">1:1</span>100%</button>
+          </div>
+          <div class="r-group-label">Thu phóng</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="sheet-tabs" id="sheetTabs" aria-label="Các sheet"></div>
+    <!-- File backstage -->
+    <div class="backstage" id="backstage">
+      <div class="backstage-nav">
+        <button type="button" id="bsBack">← Quay lại</button>
+        <button type="button" class="active" data-bs="new">Mới</button>
+        <button type="button" data-bs="open">Mở</button>
+        <button type="button" data-bs="save">Lưu</button>
+        <button type="button" data-bs="export">Xuất</button>
+        <button type="button" data-bs="info">Thông tin</button>
+      </div>
+      <div class="backstage-main" id="backstageMain">
+        <!-- filled by JS -->
+      </div>
+    </div>
 
-  <div class="status-bar">
-    <span class="ready" id="statusReady">Sẵn sàng</span>
-    <span id="statusStats"></span>
+    <!-- Find -->
+    <div class="find-bar" id="findBar">
+      <label>Tìm</label>
+      <input type="text" id="findInput" placeholder="Từ khóa…" />
+      <button class="btn" id="findPrev">↑</button>
+      <button class="btn" id="findNext">↓</button>
+      <span class="find-count" id="findCount"></span>
+      <span id="replaceGroup" style="display:none;align-items:center;gap:8px">
+        <label>Thay</label>
+        <input type="text" id="replaceInput" placeholder="Thay bằng…" />
+        <button class="btn" id="btnReplaceOne">Thay</button>
+        <button class="btn" id="btnReplaceAll">Tất cả</button>
+      </span>
+      <button class="btn" id="findClose">✕</button>
+    </div>
+
+    <!-- Formula bar -->
+    <div class="formula-bar">
+      <div class="name-box" id="cellRef">A1</div>
+      <div class="fx-btns">
+        <button type="button" class="cancel" id="fxCancel" title="Hủy (Esc)">✕</button>
+        <button type="button" class="ok" id="fxOk" title="Xác nhận (Enter)">✓</button>
+      </div>
+      <div class="fx-label">ƒx</div>
+      <input type="text" id="formulaInput" spellcheck="false" autocomplete="off" placeholder="Nhập giá trị hoặc công thức (=SUM(A1:A10))" />
+    </div>
+
+    <!-- Grid -->
+    <div class="sheet-wrap" id="sheetWrap">
+      <div class="sheet" id="sheet"></div>
+      <div class="sel-overlay" id="selOverlay"></div>
+      <div class="fill-handle" id="fillHandle" title="Kéo để điền"></div>
+      <div class="hint show" id="hint">
+        <div class="hint-box">
+          <h2>HTML Excel</h2>
+          <p>
+            Ứng dụng bảng tính giống Excel — mở <strong>XLSX / XLS / ODS / CSV</strong>,
+            định dạng ô, công thức, nhiều sheet.<br />
+            Copy–paste: <kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd> · Công thức: <kbd>=SUM(A1:A5)</kbd>
+          </p>
+          <div class="hint-actions">
+            <button class="btn primary" id="btnOpenHint">📂 Mở file</button>
+            <button class="btn" id="btnSample">✨ Dữ liệu mẫu</button>
+            <button class="btn" id="btnBlank">Sổ làm việc trống</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: sheets + status -->
+    <div class="bottom-bar">
+      <div class="sheet-tabs" id="sheetTabs"></div>
+    </div>
+    <div class="status-bar">
+      <span class="ready" id="statusReady">Sẵn sàng</span>
+      <span id="statusStats"></span>
+      <div class="zoom-ctrl">
+        <button type="button" id="zoomOut">−</button>
+        <span id="zoomLabel">100%</span>
+        <button type="button" id="zoomIn">＋</button>
+      </div>
+    </div>
   </div>
 
   <div class="toast" id="toast"></div>
-  <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.tab,.xlsx,.xls,.xlsm,.xlsb,.ods,.fods,.html,.htm,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" hidden />
+  <input type="file" id="fileInput" hidden />
 
-  <div class="modal-backdrop" id="helpModal" role="dialog" aria-label="Trợ giúp">
+  <!-- Context menu -->
+  <div class="ctx-menu" id="ctxMenu">
+    <button type="button" data-act="cut">Cắt <kbd>Ctrl+X</kbd></button>
+    <button type="button" data-act="copy">Sao chép <kbd>Ctrl+C</kbd></button>
+    <button type="button" data-act="paste">Dán <kbd>Ctrl+V</kbd></button>
+    <div class="sep"></div>
+    <button type="button" data-act="insertRow">Chèn hàng</button>
+    <button type="button" data-act="insertCol">Chèn cột</button>
+    <button type="button" data-act="deleteRow">Xóa hàng</button>
+    <button type="button" data-act="deleteCol">Xóa cột</button>
+    <div class="sep"></div>
+    <button type="button" data-act="clear">Xóa nội dung <kbd>Del</kbd></button>
+    <button type="button" data-act="clearFmt">Xóa định dạng</button>
+    <div class="sep"></div>
+    <button type="button" data-act="autoSum">Chèn =SUM</button>
+  </div>
+
+  <div class="modal-backdrop" id="helpModal">
     <div class="modal">
       <header>
-        <span>Phím tắt &amp; tính năng</span>
-        <button type="button" class="close-x" id="helpClose" aria-label="Đóng">✕</button>
+        <span>HTML Excel — Trợ giúp</span>
+        <button type="button" class="close-x" id="helpClose">✕</button>
       </header>
       <div class="body">
         <table class="shortcuts-table">
-          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Mở file (CSV, XLSX, XLS, ODS…)</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Lưu theo định dạng hiện tại</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>X</kbd> / <kbd>V</kbd></td><td>Copy / Cắt / Paste (TSV — tương thích Sheets &amp; Excel)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd> / <kbd>S</kbd></td><td>Mở / Lưu</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> <kbd>X</kbd> <kbd>V</kbd></td><td>Copy / Cắt / Dán (giống Sheets)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>B</kbd> <kbd>I</kbd> <kbd>U</kbd></td><td>Đậm / Nghiêng / Gạch dưới</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Hoàn tác / Làm lại</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>H</kbd></td><td>Tìm / Thay thế</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>A</kbd></td><td>Chọn tất cả</td></tr>
-          <tr><td><kbd>F2</kbd> / <kbd>Enter</kbd></td><td>Sửa ô</td></tr>
-          <tr><td><kbd>Delete</kbd></td><td>Xóa nội dung vùng chọn</td></tr>
-          <tr><td><kbd>Shift</kbd>+mũi tên / kéo chuột</td><td>Chọn nhiều ô</td></tr>
-          <tr><td>Double-click mép cột</td><td>Tự chỉnh độ rộng cột</td></tr>
-          <tr><td><kbd>F1</kbd></td><td>Mở trợ giúp này</td></tr>
+          <tr><td><kbd>F2</kbd> · <kbd>Enter</kbd></td><td>Sửa ô</td></tr>
+          <tr><td><kbd>Alt</kbd>+<kbd>=</kbd></td><td>Tổng tự động (AutoSum)</td></tr>
+          <tr><td>Chuột phải</td><td>Menu ngữ cảnh</td></tr>
         </table>
         <ul class="features-list">
-          <li>Mở / lưu: <strong>XLSX, XLS, ODS, CSV, TSV, HTML</strong></li>
-          <li>Nhiều sheet (tab dưới lưới) khi mở workbook Excel</li>
-          <li>Công thức: SUM, AVERAGE, COUNT, MIN, MAX, IF, ROUND…</li>
-          <li>Copy/paste giống Google Sheets · Undo/Redo · Sort · Find</li>
-          <li>Thanh trạng thái: Tổng / TB / Min / Max vùng chọn · Dark mode</li>
+          <li>Ribbon giống Excel: Trang chủ, Chèn, Công thức, Dữ liệu, Xem</li>
+          <li>Định dạng: phông, màu, căn lề, viền, số, wrap</li>
+          <li>XLSX / XLS / ODS / CSV · nhiều sheet · công thức</li>
         </ul>
       </div>
     </div>

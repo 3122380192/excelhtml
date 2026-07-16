@@ -1,78 +1,79 @@
-# HTML Excel (`HTMLEXXCEL`)
+# HTML Excel
 
-Ứng dụng spreadsheet chạy 100% trên trình duyệt — mở / sửa / lưu nhiều định dạng bảng tính, giao diện giống Excel, copy–paste nhiều ô giống **Google Sheets**.
+Ứng dụng bảng tính **giống Microsoft Excel** chạy 100% trong trình duyệt — ribbon, định dạng ô, công thức, nhiều sheet, mở/lưu XLSX.
 
-## Cách mở
+![HTML Excel](https://img.shields.io/badge/Excel-like-217346?style=flat-square)
 
-1. Mở file `index.html` bằng Chrome, Edge hoặc Firefox (double-click).
-2. Hoặc kéo thả file vào cửa sổ app.
+## Mở nhanh
 
-Không cần cài đặt, không cần server.
+Double-click `index.html` (Chrome / Edge / Firefox). Không cần cài đặt hay server.
+
+## Giao diện giống Excel
+
+- **Title bar** xanh Excel + tên file
+- **Ribbon**: Tệp · Trang chủ · Chèn · Công thức · Dữ liệu · Xem
+- **Backstage (Tệp)**: Mới / Mở / Lưu / Xuất / Thông tin
+- **Thanh công thức** + Name box + ✓/✕
+- **Lưới** header A/B/C…, số hàng, fill handle
+- **Sheet tabs** dưới lưới
+- **Status bar** xanh: Tổng / TB / Min / Max / Zoom
 
 ## Định dạng hỗ trợ
 
-| Thao tác | Định dạng |
-|----------|-----------|
-| **Mở** | `.xlsx` · `.xls` · `.xlsm` · `.xlsb` · `.ods` · `.csv` · `.tsv` · `.txt` · `.html` |
-| **Lưu** | `.xlsx` · `.xls` · `.ods` · `.csv` · `.tsv` |
+| | |
+|--|--|
+| **Mở** | XLSX, XLS, XLSM, ODS, CSV, TSV, TXT, HTML |
+| **Lưu** | XLSX, XLS, ODS, CSV, TSV |
 
-Workbook Excel/ODS có **nhiều sheet** — chuyển tab ở thanh dưới lưới. Double-click tab để đổi tên; nút `+` thêm sheet.
+## Tính năng chính
 
-## Cấu trúc dự án
+| Nhóm | Chi tiết |
+|------|----------|
+| **Clipboard** | Cut / Copy / Paste nhiều ô (TSV — Sheets & Excel) |
+| **Phông chữ** | Family, size, **B** / *I* / U, màu chữ, màu nền |
+| **Căn lề** | Trái / giữa / phải, wrap text |
+| **Số** | Chung, số, tiền ₫, %, thập phân |
+| **Viền** | Ngoài, dưới, xóa viền |
+| **Công thức** | SUM, AVERAGE, COUNT, MIN, MAX, IF, `=A1*B1`… |
+| **AutoSum** | Nút ∑ hoặc `Alt`+`=` |
+| **Dữ liệu** | Sort A↔Z, tìm/thay, tách cột |
+| **Xem** | Ghim header, đường lưới, zoom 50–200% |
+| **Sheet** | Nhiều sheet, thêm/đổi tên/xóa |
+| **Khác** | Undo/Redo, format painter, menu chuột phải, dark mode |
+
+## Phím tắt
+
+| Phím | Hành động |
+|------|-----------|
+| `Ctrl+O` / `S` / `N` | Mở / Lưu / Mới |
+| `Ctrl+C` `X` `V` | Copy / Cắt / Dán |
+| `Ctrl+B` `I` `U` | Đậm / Nghiêng / Gạch dưới |
+| `Ctrl+Z` / `Y` | Undo / Redo |
+| `Ctrl+F` / `H` | Tìm / Thay |
+| `Alt+*`=` | AutoSum |
+| `F2` | Sửa ô |
+| `F1` | Trợ giúp |
+| Chuột phải | Menu ngữ cảnh |
+
+## Cấu trúc
 
 ```
 HTMLEXXCEL/
 ├── index.html
-├── README.md
-├── css/
-│   └── styles.css
+├── css/styles.css
 └── js/
-    ├── app.js              # Logic spreadsheet
-    ├── csv.js              # Parse / ghi CSV & clipboard TSV
-    ├── io.js               # Đọc/ghi đa định dạng
-    ├── formulas.js         # Máy tính công thức
-    └── vendor/
-        └── xlsx.full.min.js  # SheetJS (Excel/ODS)
-```
-
-## Tính năng
-
-| Nhóm | Chi tiết |
-|------|----------|
-| **File** | Mở/lưu đa định dạng, kéo thả, nhiều sheet, dữ liệu mẫu |
-| **Lưới** | Ô giống Excel, thanh công thức, header A/B/C… |
-| **Clipboard** | Copy / cắt / dán nhiều ô (TSV) — Excel & Google Sheets |
-| **Công thức** | `=SUM`, `AVERAGE`, `COUNT`, `MIN`, `MAX`, `IF`, `ROUND`… |
-| **Sửa** | Undo / Redo, tìm & thay thế, thêm/xóa hàng cột |
-| **Sắp xếp** | Sort A→Z / Z→A theo cột đang chọn |
-| **UI** | Resize cột, fill handle, ghim header, dark mode |
-| **Status bar** | Tổng / TB / Min / Max / Đếm vùng chọn |
-
-## Phím tắt chính
-
-- `Ctrl+O` Mở · `Ctrl+S` Lưu (định dạng hiện tại)
-- `Ctrl+C` / `X` / `V` Copy / Cắt / Dán
-- `Ctrl+Z` / `Y` Undo / Redo
-- `Ctrl+F` / `H` Tìm / Thay thế
-- `F2` Sửa ô · `F1` Trợ giúp
-
-## Ví dụ công thức
-
-```
-=B2*C2
-=SUM(D2:D10)
-=AVERAGE(B2:B20)
-=IF(A1>0,"OK","—")
-=MAX(C2:C100)
+    ├── app.js
+    ├── csv.js
+    ├── io.js
+    ├── formulas.js
+    └── vendor/xlsx.full.min.js   # SheetJS
 ```
 
 ## Ghi chú
 
-- Thư viện **SheetJS** (`js/vendor/xlsx.full.min.js`) dùng để đọc/ghi Excel & ODS.
-- Công thức được tính khi **hiển thị**; khi lưu vẫn ghi chuỗi gốc (vd. `=SUM(D2:D5)`).
-- Lưu CSV/TSV khi có nhiều sheet: chỉ xuất **sheet đang mở**.
-- Lần đầu dán clipboard, trình duyệt có thể xin quyền — chọn **Allow**.
+- Style ô (màu, đậm…) lưu trong phiên làm việc; export XLSX/CSV hiện xuất **giá trị & công thức** (không full style OOXML).
+- Công thức tính khi hiển thị; file lưu giữ chuỗi gốc `=SUM(...)`.
 
 ## Giấy phép
 
-Dùng tự do cho mục đích cá nhân / nội bộ. SheetJS community edition theo giấy phép của SheetJS.
+Dùng tự do. SheetJS community theo license của SheetJS.
