@@ -33,8 +33,10 @@
         <button type="button" class="ribbon-tab active" data-ribbon="home">Trang chủ</button>
         <button type="button" class="ribbon-tab" data-ribbon="insert">Chèn</button>
         <button type="button" class="ribbon-tab" data-ribbon="formulas">Công thức</button>
+        <button type="button" class="ribbon-tab" data-ribbon="calc">Tính toán</button>
         <button type="button" class="ribbon-tab" data-ribbon="data">Dữ liệu</button>
         <button type="button" class="ribbon-tab" data-ribbon="view">Xem</button>
+        <button type="button" class="ribbon-tab" data-ribbon="calculator" id="tabCalculator">🖩 Máy tính</button>
       </div>
 
       <!-- HOME -->
@@ -192,20 +194,91 @@
       <div class="ribbon-body" id="ribbon-formulas">
         <div class="r-group">
           <div class="r-group-body">
-            <button type="button" class="rbtn lg" id="btnFxSum" data-fx="SUM"><span class="ico">∑</span>SUM</button>
-            <button type="button" class="rbtn lg" id="btnFxAvg" data-fx="AVERAGE"><span class="ico">x̄</span>AVERAGE</button>
-            <button type="button" class="rbtn lg" id="btnFxCount" data-fx="COUNT"><span class="ico">#</span>COUNT</button>
-            <button type="button" class="rbtn lg" id="btnFxMin" data-fx="MIN"><span class="ico">↓</span>MIN</button>
-            <button type="button" class="rbtn lg" id="btnFxMax" data-fx="MAX"><span class="ico">↑</span>MAX</button>
-            <button type="button" class="rbtn lg" id="btnFxIf" data-fx="IF"><span class="ico">?</span>IF</button>
+            <button type="button" class="rbtn lg" data-fx="SUM"><span class="ico">∑</span>SUM</button>
+            <button type="button" class="rbtn lg" data-fx="AVERAGE"><span class="ico">x̄</span>AVERAGE</button>
+            <button type="button" class="rbtn lg" data-fx="COUNT"><span class="ico">#</span>COUNT</button>
+            <button type="button" class="rbtn lg" data-fx="MIN"><span class="ico">↓</span>MIN</button>
+            <button type="button" class="rbtn lg" data-fx="MAX"><span class="ico">↑</span>MAX</button>
+            <button type="button" class="rbtn lg" data-fx="MEDIAN"><span class="ico">M</span>MEDIAN</button>
+            <button type="button" class="rbtn lg" data-fx="PRODUCT"><span class="ico">Π</span>PRODUCT</button>
+            <button type="button" class="rbtn lg" data-fx="STDEV"><span class="ico">σ</span>STDEV</button>
           </div>
-          <div class="r-group-label">Thư viện hàm</div>
+          <div class="r-group-label">Thống kê</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" data-fx="IF"><span class="ico">?</span>IF</button>
+            <button type="button" class="rbtn lg" data-fx="ROUND"><span class="ico">≈</span>ROUND</button>
+            <button type="button" class="rbtn lg" data-fx="ABS"><span class="ico">|x|</span>ABS</button>
+            <button type="button" class="rbtn lg" data-fx="SQRT"><span class="ico">√</span>SQRT</button>
+            <button type="button" class="rbtn lg" data-fx="POWER"><span class="ico">xⁿ</span>POWER</button>
+            <button type="button" class="rbtn lg" data-fx="MOD"><span class="ico">%</span>MOD</button>
+          </div>
+          <div class="r-group-label">Toán học</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" data-fx="PMT"><span class="ico">$</span>PMT</button>
+            <button type="button" class="rbtn lg" data-fx="FV"><span class="ico">FV</span>FV</button>
+            <button type="button" class="rbtn lg" data-fx="PV"><span class="ico">PV</span>PV</button>
+            <button type="button" class="rbtn lg" data-fx="NPV"><span class="ico">N</span>NPV</button>
+          </div>
+          <div class="r-group-label">Tài chính</div>
         </div>
         <div class="r-group">
           <div class="r-group-body">
             <button type="button" class="rbtn lg" id="btnShowFormulas" title="Hiện công thức"><span class="ico">ƒx</span>Hiện CT</button>
+            <button type="button" class="rbtn lg" id="btnOpenCalc2" title="Mở máy tính"><span class="ico">🖩</span>Máy tính</button>
           </div>
-          <div class="r-group-label">Kiểm tra</div>
+          <div class="r-group-label">Công cụ</div>
+        </div>
+      </div>
+
+      <!-- CALC TOOLS -->
+      <div class="ribbon-body" id="ribbon-calc">
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" data-tool="sum"><span class="ico">∑</span>Tổng vùng</button>
+            <button type="button" class="rbtn lg" data-tool="avg"><span class="ico">x̄</span>Trung bình</button>
+            <button type="button" class="rbtn lg" data-tool="product"><span class="ico">Π</span>Tích</button>
+            <button type="button" class="rbtn lg" data-tool="count"><span class="ico">#</span>Đếm số</button>
+            <button type="button" class="rbtn lg" data-tool="minmax"><span class="ico">↕</span>Min/Max</button>
+          </div>
+          <div class="r-group-label">Thống kê vùng chọn</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" data-tool="pct"><span class="ico">%</span>% của tổng</button>
+            <button type="button" class="rbtn lg" data-tool="pctChange"><span class="ico">Δ%</span>% thay đổi</button>
+            <button type="button" class="rbtn lg" data-tool="running"><span class="ico">∑→</span>Cộng dồn</button>
+            <button type="button" class="rbtn lg" data-tool="diff"><span class="ico">Δ</span>Hiệu số</button>
+          </div>
+          <div class="r-group-label">Phần trăm &amp; dãy</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" data-tool="vatAdd" title="Cộng VAT 10%"><span class="ico">＋</span>+VAT 10%</button>
+            <button type="button" class="rbtn lg" data-tool="vatRem" title="Bỏ VAT 10%"><span class="ico">−</span>−VAT 10%</button>
+            <button type="button" class="rbtn lg" data-tool="vatCustom"><span class="ico">%</span>VAT tùy chọn</button>
+            <button type="button" class="rbtn lg" data-tool="margin"><span class="ico">📈</span>Lãi gộp</button>
+          </div>
+          <div class="r-group-label">Thuế &amp; lợi nhuận</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" data-tool="interest"><span class="ico">💰</span>Lãi đơn</button>
+            <button type="button" class="rbtn lg" data-tool="compound"><span class="ico">📊</span>Lãi kép</button>
+            <button type="button" class="rbtn lg" data-tool="loan"><span class="ico">🏦</span>Trả góp</button>
+            <button type="button" class="rbtn lg" data-tool="discount"><span class="ico">🏷</span>Giảm giá</button>
+          </div>
+          <div class="r-group-label">Tài chính nhanh</div>
+        </div>
+        <div class="r-group">
+          <div class="r-group-body">
+            <button type="button" class="rbtn lg" id="btnOpenCalc" title="Mở máy tính"><span class="ico">🖩</span>Máy tính</button>
+            <button type="button" class="rbtn lg" data-tool="evaluate"><span class="ico">=</span>Tính biểu thức</button>
+          </div>
+          <div class="r-group-label">Máy tính</div>
         </div>
       </div>
 
@@ -335,6 +408,75 @@
   <div class="toast" id="toast"></div>
   <input type="file" id="fileInput" hidden />
 
+  <!-- Floating calculator -->
+  <div class="calc-panel" id="calcPanel" role="dialog" aria-label="Máy tính">
+    <div class="calc-head">
+      <span class="calc-title">🖩 Máy tính</span>
+      <div class="calc-head-actions">
+        <button type="button" id="calcMode" title="Đổi chế độ">Khoa học</button>
+        <button type="button" id="calcClose" title="Đóng">✕</button>
+      </div>
+    </div>
+    <div class="calc-expr" id="calcExpr">&nbsp;</div>
+    <div class="calc-display" id="calcDisplay">0</div>
+    <div class="calc-mem">
+      <button type="button" data-mem="MC">MC</button>
+      <button type="button" data-mem="MR">MR</button>
+      <button type="button" data-mem="M+">M+</button>
+      <button type="button" data-mem="M-">M−</button>
+      <button type="button" data-mem="MS">MS</button>
+    </div>
+    <div class="calc-sci" id="calcSci">
+      <button type="button" data-calc="sin">sin</button>
+      <button type="button" data-calc="cos">cos</button>
+      <button type="button" data-calc="tan">tan</button>
+      <button type="button" data-calc="log">log</button>
+      <button type="button" data-calc="ln">ln</button>
+      <button type="button" data-calc="sqrt">√</button>
+      <button type="button" data-calc="sq">x²</button>
+      <button type="button" data-calc="inv">1/x</button>
+      <button type="button" data-calc="fact">n!</button>
+      <button type="button" data-calc="abs">|x|</button>
+      <button type="button" data-calc="pi">π</button>
+      <button type="button" data-calc="(">(</button>
+      <button type="button" data-calc=")">)</button>
+      <button type="button" data-calc="^">^</button>
+    </div>
+    <div class="calc-keys">
+      <button type="button" data-calc="C" class="warn">C</button>
+      <button type="button" data-calc="CE" class="warn">CE</button>
+      <button type="button" data-calc="BS" class="warn">⌫</button>
+      <button type="button" data-calc="/" class="op">÷</button>
+
+      <button type="button" data-calc="7">7</button>
+      <button type="button" data-calc="8">8</button>
+      <button type="button" data-calc="9">9</button>
+      <button type="button" data-calc="*" class="op">×</button>
+
+      <button type="button" data-calc="4">4</button>
+      <button type="button" data-calc="5">5</button>
+      <button type="button" data-calc="6">6</button>
+      <button type="button" data-calc="-" class="op">−</button>
+
+      <button type="button" data-calc="1">1</button>
+      <button type="button" data-calc="2">2</button>
+      <button type="button" data-calc="3">3</button>
+      <button type="button" data-calc="+" class="op">+</button>
+
+      <button type="button" data-calc="±">±</button>
+      <button type="button" data-calc="0">0</button>
+      <button type="button" data-calc=".">.</button>
+      <button type="button" data-calc="=" class="eq">=</button>
+
+      <button type="button" data-calc="%" class="op">%</button>
+    </div>
+    <div class="calc-actions">
+      <button type="button" class="btn primary" id="calcInsert">⬇ Chèn số vào ô</button>
+      <button type="button" class="btn" id="calcInsertExpr">ƒx Chèn công thức</button>
+    </div>
+    <div class="calc-history" id="calcHistory"></div>
+  </div>
+
   <!-- Context menu -->
   <div class="ctx-menu" id="ctxMenu">
     <button type="button" data-act="cut">Cắt <kbd>Ctrl+X</kbd></button>
@@ -367,12 +509,14 @@
           <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>H</kbd></td><td>Tìm / Thay thế</td></tr>
           <tr><td><kbd>F2</kbd> · <kbd>Enter</kbd></td><td>Sửa ô</td></tr>
           <tr><td><kbd>Alt</kbd>+<kbd>=</kbd></td><td>Tổng tự động (AutoSum)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd></td><td>Mở máy tính</td></tr>
           <tr><td>Chuột phải</td><td>Menu ngữ cảnh</td></tr>
         </table>
         <ul class="features-list">
-          <li>Ribbon giống Excel: Trang chủ, Chèn, Công thức, Dữ liệu, Xem</li>
-          <li>Định dạng: phông, màu, căn lề, viền, số, wrap</li>
-          <li>XLSX / XLS / ODS / CSV · nhiều sheet · công thức</li>
+          <li>Ribbon: Trang chủ, Chèn, Công thức, <strong>Tính toán</strong>, Dữ liệu, Xem, Máy tính</li>
+          <li>Máy tính nổi: cơ bản + khoa học, chèn số/công thức vào ô</li>
+          <li>Công cụ: VAT, lãi đơn/kép, trả góp, % tổng, cộng dồn…</li>
+          <li>XLSX / XLS / ODS / CSV · nhiều sheet · hàm tài chính PMT/FV/NPV</li>
         </ul>
       </div>
     </div>
@@ -382,6 +526,7 @@
   <script src="js/csv.js"></script>
   <script src="js/io.js"></script>
   <script src="js/formulas.js"></script>
+  <script src="js/calc.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

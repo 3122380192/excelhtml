@@ -1028,15 +1028,350 @@
     commitEdit();
     const rg = getRange();
     let formula;
-    if (name === "IF") formula = "=IF(A1>0,\"OK\",\"\")";
-    else if (rg.r1 === rg.r2 && rg.c1 === rg.c2) formula = `=${name}()`;
-    else formula = `=${name}(${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)})`;
+    const range = `${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)}`;
+    const single = rg.r1 === rg.r2 && rg.c1 === rg.c2;
+    if (name === "IF") formula = '=IF(A1>0,"OK","")';
+    else if (name === "ROUND") formula = single ? `=ROUND(${cellAddr(activeR, activeC)},2)` : `=ROUND(${cellAddr(rg.r1, rg.c1)},2)`;
+    else if (name === "POWER") formula = `=POWER(${cellAddr(activeR, activeC)},2)`;
+    else if (name === "MOD") formula = `=MOD(${cellAddr(activeR, activeC)},2)`;
+    else if (name === "ABS" || name === "SQRT") formula = `=${name}(${cellAddr(activeR, activeC)})`;
+    else if (name === "PMT") formula = "=PMT(0.01,12,-10000000)";
+    else if (name === "FV") formula = "=FV(0.01,12,-1000000)";
+    else if (name === "PV") formula = "=PV(0.01,12,-1000000)";
+    else if (name === "NPV") formula = "=NPV(0.1,100,200,300)";
+    else if (single) formula = `=${name}()`;
+    else formula = `=${name}(${range})`;
     pushUndo();
     setCell(activeR, activeC, formula);
     refreshRange(activeR, activeC, activeR, activeC);
     markDirty();
     updateFormulaBar();
     startEdit();
+  }
+
+  function selectionNumbers() {
+    const rg = getRange();
+    const vals = [];
+    const cells = [];
+    for (let r = rg.r1; r <= rg.r2; r++) {
+      for (let c = rg.c1; c <= rg.c2; c++) {
+        const fd = formatDisplay(getRaw(r, c), getStyle(r, c), r, c);
+        const n = typeof fd.value === "number" ? fd.value : Formulas.parseNumber(getRaw(r, c));
+        if (n !== null) {
+          vals.push(n);
+          cells.push({ r, c, n, raw: getRaw(r, c) });
+        }
+      }
+    }
+    return { rg, vals, cells };
+  }
+
+  function applyCalcTool(tool) {
+    commitEdit();
+    const { rg, vals, cells } = selectionNumbers();
+
+    if (tool === "sum" || tool === "avg" || tool === "product" || tool === "count" || tool === "minmax") {
+      if (!vals.length && tool !== "count") return toast("Chọn vùng có số");
+      if (tool === "sum") {
+        const f = `=SUM(${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)})`;
+        pushUndo();
+        const tr = rg.r2 + 1;
+        ensureSize(tr, rg.c1);
+        setCell(tr, rg.c1, f);
+        setStyle(tr, rg.c1, { bold: true, fill: "#e7f3ec" });
+        renderSheet();
+        setSelection(tr, rg.c1, tr, rg.c1);
+        markDirty();
+        return toast("Tổng: " + f);
+      }
+      if (tool === "avg") {
+        const f = `=AVERAGE(${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)})`;
+        pushUndo();
+        const tr = rg.r2 + 1;
+        ensureSize(tr, rg.c1);
+        setCell(tr, rg.c1, f);
+        setStyle(tr, rg.c1, { bold: true, fill: "#e7f3ec" });
+        renderSheet();
+        markDirty();
+        return toast("TB: " + f);
+      }
+      if (tool === "product") {
+        const f = `=PRODUCT(${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)})`;
+        pushUndo();
+        const tr = rg.r2 + 1;
+        ensureSize(tr, rg.c1);
+        setCell(tr, rg.c1, f);
+        setStyle(tr, rg.c1, { bold: true, fill: "#e7f3ec" });
+        renderSheet();
+        markDirty();
+        return toast("Tích: " + f);
+      }
+      if (tool === "count") {
+        const f = `=COUNT(${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)})`;
+        pushUndo();
+        const tr = rg.r2 + 1;
+        ensureSize(tr, rg.c1);
+        setCell(tr, rg.c1, f);
+        setStyle(tr, rg.c1, { bold: true, fill: "#e7f3ec" });
+        renderSheet();
+        markDirty();
+        return toast("Đếm: " + f);
+      }
+      if (tool === "minmax") {
+        pushUndo();
+        const tr = rg.r2 + 1;
+        ensureSize(tr + 1, rg.c1);
+        setCell(tr, rg.c1, `=MIN(${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)})`);
+        setCell(tr + 1, rg.c1, `=MAX(${cellAddr(rg.r1, rg.c1)}:${cellAddr(rg.r2, rg.c2)})`);
+        setStyle(tr, rg.c1, { bold: true, fill: "#fff3cd" });
+        setStyle(tr + 1, rg.c1, { bold: true, fill: "#fff3cd" });
+        renderSheet();
+        markDirty();
+        return toast("Đã chèn MIN / MAX");
+      }
+    }
+
+    if (tool === "pct") {
+      if (vals.length < 1) return toast("Chọn dãy số");
+      const total = vals.reduce((a, b) => a + b, 0);
+      if (!total) return toast("Tổng = 0");
+      pushUndo();
+      // write % in column to the right
+      const outC = rg.c2 + 1;
+      ensureSize(rg.r2, outC);
+      setCell(Math.max(0, rg.r1 - 1), outC, "% tổng");
+      setStyle(Math.max(0, rg.r1 - 1), outC, { bold: true });
+      for (const cell of cells) {
+        setCell(cell.r, outC, String(cell.n / total));
+        setStyle(cell.r, outC, { numFmt: "percent", decimals: 2 });
+      }
+      renderSheet();
+      markDirty();
+      return toast("Đã tính % của tổng (cột bên phải)");
+    }
+
+    if (tool === "pctChange") {
+      if (cells.length < 2) return toast("Cần ≥ 2 số theo cột/hàng");
+      pushUndo();
+      const outC = rg.c2 + 1;
+      ensureSize(rg.r2, outC);
+      setCell(cells[0].r, outC, "—");
+      for (let i = 1; i < cells.length; i++) {
+        const prev = cells[i - 1].n;
+        const cur = cells[i].n;
+        const ch = prev === 0 ? 0 : (cur - prev) / prev;
+        setCell(cells[i].r, outC, String(ch));
+        setStyle(cells[i].r, outC, { numFmt: "percent", decimals: 2 });
+      }
+      renderSheet();
+      markDirty();
+      return toast("Đã tính % thay đổi");
+    }
+
+    if (tool === "running") {
+      if (!cells.length) return toast("Chọn dãy số");
+      pushUndo();
+      const outC = rg.c2 + 1;
+      ensureSize(rg.r2, outC);
+      let run = 0;
+      for (const cell of cells) {
+        run += cell.n;
+        setCell(cell.r, outC, String(run));
+        setStyle(cell.r, outC, { numFmt: "number", fill: "#e7f3ec" });
+      }
+      renderSheet();
+      markDirty();
+      return toast("Đã cộng dồn → cột phải");
+    }
+
+    if (tool === "diff") {
+      if (cells.length < 2) return toast("Cần ≥ 2 số");
+      pushUndo();
+      const outC = rg.c2 + 1;
+      ensureSize(rg.r2, outC);
+      setCell(cells[0].r, outC, "—");
+      for (let i = 1; i < cells.length; i++) {
+        setCell(cells[i].r, outC, String(cells[i].n - cells[i - 1].n));
+        setStyle(cells[i].r, outC, { numFmt: "number" });
+      }
+      renderSheet();
+      markDirty();
+      return toast("Đã tính hiệu số");
+    }
+
+    if (tool === "vatAdd" || tool === "vatRem" || tool === "vatCustom") {
+      let rate = 0.1;
+      if (tool === "vatCustom") {
+        const p = prompt("Thuế VAT (%)", "10");
+        if (p == null) return;
+        rate = Number(p) / 100;
+        if (!isFinite(rate)) return toast("VAT không hợp lệ");
+      }
+      if (!cells.length) return toast("Chọn ô số");
+      pushUndo();
+      for (const cell of cells) {
+        const v = tool === "vatRem" ? cell.n / (1 + rate) : cell.n * (1 + rate);
+        setCell(cell.r, cell.c, String(Math.round(v * 100) / 100));
+        setStyle(cell.r, cell.c, { numFmt: "currency" });
+      }
+      renderSheet();
+      markDirty();
+      return toast(tool === "vatRem" ? "Đã bỏ VAT" : "Đã cộng VAT " + rate * 100 + "%");
+    }
+
+    if (tool === "margin") {
+      // cost in col1, price in col2 of selection (2 cols) OR prompt
+      if (rg.c2 - rg.c1 < 1 && cells.length < 2) {
+        const cost = Number(prompt("Giá vốn:", getRaw(activeR, activeC) || "0"));
+        const price = Number(prompt("Giá bán:", "0"));
+        if (!isFinite(cost) || !isFinite(price) || price === 0) return toast("Số không hợp lệ");
+        const margin = (price - cost) / price;
+        pushUndo();
+        setCell(activeR, activeC, String(margin));
+        setStyle(activeR, activeC, { numFmt: "percent", decimals: 2, bold: true });
+        refreshCell(activeR, activeC);
+        markDirty();
+        return toast("Biên lợi nhuận: " + (margin * 100).toFixed(2) + "%");
+      }
+      // two columns: cost | price → margin in next col
+      pushUndo();
+      const outC = rg.c2 + 1;
+      ensureSize(rg.r2, outC);
+      for (let r = rg.r1; r <= rg.r2; r++) {
+        const cost = Formulas.parseNumber(getRaw(r, rg.c1));
+        const price = Formulas.parseNumber(getRaw(r, rg.c1 + 1));
+        if (cost === null || price === null || !price) continue;
+        setCell(r, outC, String((price - cost) / price));
+        setStyle(r, outC, { numFmt: "percent", decimals: 2 });
+      }
+      renderSheet();
+      markDirty();
+      return toast("Biên LN → cột phải (vốn | giá bán)");
+    }
+
+    if (tool === "interest") {
+      const p = Number(prompt("Số tiền gốc (P):", "10000000"));
+      const r = Number(prompt("Lãi suất năm %:", "8"));
+      const t = Number(prompt("Số năm (t):", "1"));
+      if (![p, r, t].every(isFinite)) return toast("Số không hợp lệ");
+      const interest = p * (r / 100) * t;
+      const total = p + interest;
+      pushUndo();
+      ensureSize(activeR + 3, activeC + 1);
+      setCell(activeR, activeC, "Gốc"); setCell(activeR, activeC + 1, String(p));
+      setCell(activeR + 1, activeC, "Lãi đơn"); setCell(activeR + 1, activeC + 1, String(interest));
+      setCell(activeR + 2, activeC, "Tổng"); setCell(activeR + 2, activeC + 1, String(total));
+      setStyle(activeR + 1, activeC + 1, { numFmt: "currency", fill: "#e7f3ec" });
+      setStyle(activeR + 2, activeC + 1, { numFmt: "currency", bold: true });
+      renderSheet();
+      markDirty();
+      return toast("Lãi đơn: " + interest.toLocaleString("vi-VN"));
+    }
+
+    if (tool === "compound") {
+      const p = Number(prompt("Số tiền gốc (P):", "10000000"));
+      const r = Number(prompt("Lãi suất năm %:", "8"));
+      const t = Number(prompt("Số năm (t):", "5"));
+      const n = Number(prompt("Kỳ ghép/năm (n):", "12"));
+      if (![p, r, t, n].every(isFinite) || !n) return toast("Số không hợp lệ");
+      const amount = p * Math.pow(1 + r / 100 / n, n * t);
+      pushUndo();
+      ensureSize(activeR + 2, activeC + 1);
+      setCell(activeR, activeC, "Gốc"); setCell(activeR, activeC + 1, String(p));
+      setCell(activeR + 1, activeC, "Lãi kép (FV)"); setCell(activeR + 1, activeC + 1, String(Math.round(amount)));
+      setStyle(activeR + 1, activeC + 1, { numFmt: "currency", bold: true, fill: "#e7f3ec" });
+      renderSheet();
+      markDirty();
+      return toast("FV: " + Math.round(amount).toLocaleString("vi-VN"));
+    }
+
+    if (tool === "loan") {
+      const pv = Number(prompt("Khoản vay (VNĐ):", "500000000"));
+      const annual = Number(prompt("Lãi suất năm %:", "10"));
+      const years = Number(prompt("Số năm:", "5"));
+      if (![pv, annual, years].every(isFinite) || !years) return toast("Số không hợp lệ");
+      const rate = annual / 100 / 12;
+      const nper = years * 12;
+      const pmt = rate === 0 ? pv / nper : (pv * rate * Math.pow(1 + rate, nper)) / (Math.pow(1 + rate, nper) - 1);
+      pushUndo();
+      ensureSize(activeR + 4, activeC + 1);
+      const rowsW = [
+        ["Khoản vay", pv],
+        ["Lãi suất/năm", annual + "%"],
+        ["Thời hạn", years + " năm"],
+        ["Trả hàng tháng", Math.round(pmt)],
+        ["Tổng trả", Math.round(pmt * nper)],
+      ];
+      rowsW.forEach((row, i) => {
+        setCell(activeR + i, activeC, row[0]);
+        setCell(activeR + i, activeC + 1, String(row[1]));
+      });
+      setStyle(activeR + 3, activeC + 1, { numFmt: "currency", bold: true, fill: "#e7f3ec" });
+      setStyle(activeR + 4, activeC + 1, { numFmt: "currency", bold: true });
+      renderSheet();
+      markDirty();
+      return toast("Trả/tháng ≈ " + Math.round(pmt).toLocaleString("vi-VN") + " ₫");
+    }
+
+    if (tool === "discount") {
+      if (!cells.length) {
+        const price = Number(prompt("Giá gốc:", "100000"));
+        const pct = Number(prompt("Giảm %:", "20"));
+        if (![price, pct].every(isFinite)) return toast("Số không hợp lệ");
+        const sale = price * (1 - pct / 100);
+        pushUndo();
+        setCell(activeR, activeC, String(sale));
+        setStyle(activeR, activeC, { numFmt: "currency", bold: true });
+        refreshCell(activeR, activeC);
+        markDirty();
+        return toast("Giá sau giảm: " + sale.toLocaleString("vi-VN"));
+      }
+      const pct = Number(prompt("Giảm giá % cho vùng chọn:", "10"));
+      if (!isFinite(pct)) return toast("Không hợp lệ");
+      pushUndo();
+      for (const cell of cells) {
+        setCell(cell.r, cell.c, String(Math.round(cell.n * (1 - pct / 100) * 100) / 100));
+        setStyle(cell.r, cell.c, { numFmt: "currency" });
+      }
+      renderSheet();
+      markDirty();
+      return toast("Đã giảm " + pct + "%");
+    }
+
+    if (tool === "evaluate") {
+      const expr = prompt("Nhập biểu thức (vd: 15*20+100 hoặc =A1*2):", getRaw(activeR, activeC) || "");
+      if (expr == null || expr === "") return;
+      pushUndo();
+      const formula = expr.startsWith("=") ? expr : "=" + expr;
+      setCell(activeR, activeC, formula);
+      refreshRange(activeR, activeC, activeR, activeC);
+      markDirty();
+      updateFormulaBar();
+      return toast("Đã tính: " + formula);
+    }
+  }
+
+  // Calculator
+  let calc = null;
+  function ensureCalc() {
+    if (calc) return calc;
+    calc = CalcUI.createCalculator({
+      onInsert: (val) => {
+        commitEdit();
+        pushUndo();
+        setCell(activeR, activeC, val);
+        refreshRange(activeR, activeC, activeR, activeC);
+        markDirty();
+        updateFormulaBar();
+        hint.classList.remove("show");
+      },
+      onToast: toast,
+    });
+    return calc;
+  }
+  function openCalculator() {
+    ensureCalc().open();
+    toast("Máy tính — phím số hoạt động khi panel mở");
   }
 
   // ── Fill ────────────────────────────────────────────────
@@ -1261,6 +1596,17 @@
   function setRibbon(name) {
     if (name === "file") {
       openBackstage("new");
+      return;
+    }
+    if (name === "calculator") {
+      openCalculator();
+      // keep previous ribbon body; highlight calc tools tab visually via calc ribbon
+      document.querySelectorAll(".ribbon-tab").forEach((t) => {
+        t.classList.toggle("active", t.dataset.ribbon === "calc");
+      });
+      document.querySelectorAll(".ribbon-body").forEach((b) => {
+        b.classList.toggle("active", b.id === "ribbon-calc");
+      });
       return;
     }
     document.querySelectorAll(".ribbon-tab").forEach((t) => {
@@ -1739,9 +2085,11 @@
     }
   };
 
-  ["SUM", "AVERAGE", "COUNT", "MIN", "MAX", "IF"].forEach((fx) => {
-    const el = document.querySelector(`[data-fx="${fx}"]`);
-    if (el) el.onclick = () => insertFx(fx);
+  document.querySelectorAll("[data-fx]").forEach((el) => {
+    el.addEventListener("click", () => insertFx(el.dataset.fx));
+  });
+  document.querySelectorAll("[data-tool]").forEach((el) => {
+    el.addEventListener("click", () => applyCalcTool(el.dataset.tool));
   });
   document.getElementById("btnShowFormulas").onclick = () => {
     showFormulas = !showFormulas;
@@ -1749,6 +2097,15 @@
     syncRibbonFromActive();
     toast(showFormulas ? "Hiện công thức" : "Hiện kết quả");
   };
+  document.getElementById("btnOpenCalc")?.addEventListener("click", () => openCalculator());
+  document.getElementById("btnOpenCalc2")?.addEventListener("click", () => openCalculator());
+  // shortcut Ctrl+Shift+C → calculator
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "c") {
+      e.preventDefault();
+      openCalculator();
+    }
+  });
 
   document.getElementById("btnTextToCol").onclick = () => {
     commitEdit();

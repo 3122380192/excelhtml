@@ -400,6 +400,11 @@
         return Math.abs(nums(args)[0] || 0);
       case "INT":
         return Math.floor(nums(args)[0] || 0);
+      case "CEILING":
+      case "CEIL":
+        return Math.ceil(nums(args)[0] || 0);
+      case "FLOOR":
+        return Math.floor(nums(args)[0] || 0);
       case "SQRT": {
         const v = nums(args)[0];
         if (v < 0) throw new Error("#NUM!");
@@ -408,12 +413,154 @@
       case "POWER":
       case "POW": {
         const a = nums(args);
-        return Math.pow(a[0], a[1]);
+        return Math.pow(a[0], a[1] != null ? a[1] : 2);
+      }
+      case "MOD": {
+        const a = nums(args);
+        if (!a[1]) throw new Error("#DIV/0!");
+        return a[0] % a[1];
+      }
+      case "PRODUCT":
+        return nums(args).reduce((a, b) => a * b, 1);
+      case "MEDIAN": {
+        const a = nums(args).slice().sort((x, y) => x - y);
+        if (!a.length) throw new Error("#VALUE!");
+        const m = Math.floor(a.length / 2);
+        return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+      }
+      case "STDEV":
+      case "STDEV.S": {
+        const a = nums(args);
+        if (a.length < 2) throw new Error("#DIV/0!");
+        const mean = a.reduce((x, y) => x + y, 0) / a.length;
+        const v = a.reduce((s, x) => s + (x - mean) ** 2, 0) / (a.length - 1);
+        return Math.sqrt(v);
+      }
+      case "VAR":
+      case "VAR.S": {
+        const a = nums(args);
+        if (a.length < 2) throw new Error("#DIV/0!");
+        const mean = a.reduce((x, y) => x + y, 0) / a.length;
+        return a.reduce((s, x) => s + (x - mean) ** 2, 0) / (a.length - 1);
+      }
+      case "LOG": {
+        const a = nums(args);
+        const base = a[1] != null ? a[1] : 10;
+        if (a[0] <= 0 || base <= 0 || base === 1) throw new Error("#NUM!");
+        return Math.log(a[0]) / Math.log(base);
+      }
+      case "LN": {
+        const v = nums(args)[0];
+        if (v <= 0) throw new Error("#NUM!");
+        return Math.log(v);
+      }
+      case "LOG10": {
+        const v = nums(args)[0];
+        if (v <= 0) throw new Error("#NUM!");
+        return Math.log10(v);
+      }
+      case "EXP":
+        return Math.exp(nums(args)[0] || 0);
+      case "SIN":
+        return Math.sin(nums(args)[0] || 0);
+      case "COS":
+        return Math.cos(nums(args)[0] || 0);
+      case "TAN":
+        return Math.tan(nums(args)[0] || 0);
+      case "ASIN":
+        return Math.asin(nums(args)[0] || 0);
+      case "ACOS":
+        return Math.acos(nums(args)[0] || 0);
+      case "ATAN":
+        return Math.atan(nums(args)[0] || 0);
+      case "RADIANS":
+        return ((nums(args)[0] || 0) * Math.PI) / 180;
+      case "DEGREES":
+        return ((nums(args)[0] || 0) * 180) / Math.PI;
+      case "FACT": {
+        const n = Math.floor(nums(args)[0] || 0);
+        if (n < 0 || n > 170) throw new Error("#NUM!");
+        let f = 1;
+        for (let i = 2; i <= n; i++) f *= i;
+        return f;
+      }
+      case "GCD": {
+        const a = nums(args).map((x) => Math.abs(Math.floor(x)));
+        if (!a.length) throw new Error("#VALUE!");
+        const g = (x, y) => (y === 0 ? x : g(y, x % y));
+        return a.reduce((acc, v) => g(acc, v));
+      }
+      case "LCM": {
+        const a = nums(args).map((x) => Math.abs(Math.floor(x)));
+        if (!a.length) throw new Error("#VALUE!");
+        const g = (x, y) => (y === 0 ? x : g(y, x % y));
+        return a.reduce((acc, v) => (acc * v) / g(acc, v));
+      }
+      case "RANDBETWEEN": {
+        const a = nums(args);
+        const lo = Math.min(a[0] || 0, a[1] || 0);
+        const hi = Math.max(a[0] || 0, a[1] || 1);
+        return Math.floor(Math.random() * (hi - lo + 1)) + lo;
+      }
+      case "RAND":
+        return Math.random();
+      case "SIGN": {
+        const v = nums(args)[0] || 0;
+        return v > 0 ? 1 : v < 0 ? -1 : 0;
+      }
+      case "PMT": {
+        // PMT(rate, nper, pv) — monthly payment
+        const a = nums(args);
+        const rate = a[0], nper = a[1], pv = a[2];
+        if (!nper) throw new Error("#NUM!");
+        if (!rate) return -pv / nper;
+        return (-pv * rate * Math.pow(1 + rate, nper)) / (Math.pow(1 + rate, nper) - 1);
+      }
+      case "FV": {
+        // FV(rate, nper, pmt, [pv])
+        const a = nums(args);
+        const rate = a[0], nper = a[1], pmt = a[2] || 0, pv = a[3] || 0;
+        if (!rate) return -(pv + pmt * nper);
+        return -(pv * Math.pow(1 + rate, nper) + (pmt * (Math.pow(1 + rate, nper) - 1)) / rate);
+      }
+      case "PV": {
+        const a = nums(args);
+        const rate = a[0], nper = a[1], pmt = a[2] || 0, fv = a[3] || 0;
+        if (!rate) return -(fv + pmt * nper);
+        return -((pmt * (1 - Math.pow(1 + rate, -nper))) / rate + fv / Math.pow(1 + rate, nper));
+      }
+      case "NPV": {
+        const a = nums(args);
+        if (a.length < 2) throw new Error("#VALUE!");
+        const rate = a[0];
+        let npv = 0;
+        for (let i = 1; i < a.length; i++) npv += a[i] / Math.pow(1 + rate, i);
+        return npv;
+      }
+      case "PERCENT":
+      case "PCT": {
+        // PERCENT(part, whole) → part/whole
+        const a = nums(args);
+        if (!a[1]) throw new Error("#DIV/0!");
+        return a[0] / a[1];
       }
       case "IF": {
         const cond = Array.isArray(args[0]) ? args[0][0] : args[0];
         const truthy = cond === true || (typeof cond === "number" && cond !== 0) || (typeof cond === "string" && cond !== "" && cond !== "FALSE");
         return truthy ? (args[1] !== undefined ? args[1] : true) : args[2] !== undefined ? args[2] : false;
+      }
+      case "AND": {
+        const flat = flatten(args);
+        return flat.every((v) => v === true || (typeof v === "number" && v !== 0) || (typeof v === "string" && v !== "" && v !== "FALSE"));
+      }
+      case "OR": {
+        const flat = flatten(args);
+        return flat.some((v) => v === true || (typeof v === "number" && v !== 0) || (typeof v === "string" && v !== "" && v !== "FALSE"));
+      }
+      case "NOT": {
+        const v = flatten(args)[0];
+        const truthy = v === true || (typeof v === "number" && v !== 0) || (typeof v === "string" && v !== "" && v !== "FALSE");
+        return !truthy;
       }
       case "LEN": {
         const v = flatten(args)[0];
@@ -425,6 +572,27 @@
         return String(flatten(args)[0] ?? "").toLowerCase();
       case "TRIM":
         return String(flatten(args)[0] ?? "").trim();
+      case "LEFT": {
+        const s = String(flatten(args)[0] ?? "");
+        const n = nums(args)[0] != null ? Math.floor(nums([flatten(args)[1]])[0] || nums(args)[0] || 1) : 1;
+        // LEFT(text, n) — second arg may be string path; re-parse
+        const parts = flatten(args);
+        const nn = typeof parts[1] === "number" ? parts[1] : parseNumber(parts[1]) || 1;
+        return s.slice(0, nn);
+      }
+      case "RIGHT": {
+        const parts = flatten(args);
+        const s = String(parts[0] ?? "");
+        const nn = typeof parts[1] === "number" ? parts[1] : parseNumber(parts[1]) || 1;
+        return s.slice(-nn);
+      }
+      case "MID": {
+        const parts = flatten(args);
+        const s = String(parts[0] ?? "");
+        const start = (typeof parts[1] === "number" ? parts[1] : parseNumber(parts[1]) || 1) - 1;
+        const len = typeof parts[2] === "number" ? parts[2] : parseNumber(parts[2]) || 0;
+        return s.substr(start, len);
+      }
       case "CONCAT":
       case "CONCATENATE":
         return flatten(args).map((v) => String(v ?? "")).join("");
@@ -434,6 +602,8 @@
         return false;
       case "PI":
         return Math.PI;
+      case "E":
+        return Math.E;
       case "NOW":
         return new Date().toLocaleString();
       case "TODAY":
