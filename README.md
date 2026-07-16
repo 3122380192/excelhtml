@@ -1,59 +1,41 @@
-# HTML Excel
+# HTML Sheets
 
-Ứng dụng bảng tính **giống Microsoft Excel** chạy 100% trong trình duyệt — ribbon, định dạng ô, công thức, nhiều sheet, mở/lưu XLSX.
+Bảng tính trong trình duyệt với giao diện **giống Google Sheets**, hỗ trợ XLSX/CSV, công thức, máy tính và **panel gợi ý hàm**.
 
-![HTML Excel](https://img.shields.io/badge/Excel-like-217346?style=flat-square)
+## Mở
 
-## Mở nhanh
+Double-click `index.html` (Chrome / Edge / Firefox).
 
-Double-click `index.html` (Chrome / Edge / Firefox). Không cần cài đặt hay server.
+## Giao diện (Google Sheets style)
 
-## Giao diện giống Excel
+- Logo Sheets + **đổi tên file** trên header  
+- Menu: **File · Edit · View · Insert · Format · Data · Tools · Help**  
+- Toolbar: undo, font, **B/I/U**, màu, căn lề, số, ƒx…  
+- Thanh công thức + Name box  
+- Selection **xanh dương** (Sheets blue)  
+- Sheet tabs **xanh lá** phía dưới  
+- Dark mode (View → theme)
 
-- **Title bar** xanh Excel + tên file
-- **Ribbon**: Tệp · Trang chủ · Chèn · Công thức · Dữ liệu · Xem
-- **Backstage (Tệp)**: Mới / Mở / Lưu / Xuất / Thông tin
-- **Thanh công thức** + Name box + ✓/✕
-- **Lưới** header A/B/C…, số hàng, fill handle
-- **Sheet tabs** dưới lưới
-- **Status bar** xanh: Tổng / TB / Min / Max / Zoom
+## Panel Functions (tab gợi ý hàm)
 
-## Định dạng hỗ trợ
+- Cột phải **Functions** — tìm kiếm + lọc Math / Logic / Finance / Text / Date  
+- Gõ **`=`** trên thanh công thức → **autocomplete**  
+- Click hàm → chèn vào ô  
+- Phím: `↑` `↓` chọn · `Tab` chèn · `Esc` đóng  
+- Toggle: nút **∑?** trên toolbar hoặc rail **ƒx**
+
+## File & tính toán
 
 | | |
 |--|--|
-| **Mở** | XLSX, XLS, XLSM, ODS, CSV, TSV, TXT, HTML |
-| **Lưu** | XLSX, XLS, ODS, CSV, TSV |
-
-## Tính năng chính
-
-| Nhóm | Chi tiết |
-|------|----------|
-| **Clipboard** | Cut / Copy / Paste nhiều ô (TSV — Sheets & Excel) |
-| **Phông chữ** | Family, size, **B** / *I* / U, màu chữ, màu nền |
-| **Căn lề** | Trái / giữa / phải, wrap text |
-| **Số** | Chung, số, tiền ₫, %, thập phân |
-| **Viền** | Ngoài, dưới, xóa viền |
-| **Công thức** | SUM, AVERAGE, COUNT, MIN, MAX, IF, `=A1*B1`… |
-| **AutoSum** | Nút ∑ hoặc `Alt`+`=` |
-| **Dữ liệu** | Sort A↔Z, tìm/thay, tách cột |
-| **Xem** | Ghim header, đường lưới, zoom 50–200% |
-| **Sheet** | Nhiều sheet, thêm/đổi tên/xóa |
-| **Khác** | Undo/Redo, format painter, menu chuột phải, dark mode |
+| **Mở / tải** | XLSX, XLS, ODS, CSV, TSV, HTML |
+| **Công thức** | SUM, AVERAGE, IF, PMT, FV… (xem panel Functions) |
+| **Tools** | Máy tính, VAT, lãi, trả góp, % tổng… |
+| **Clipboard** | Copy/paste nhiều ô như Sheets |
 
 ## Phím tắt
 
-| Phím | Hành động |
-|------|-----------|
-| `Ctrl+O` / `S` / `N` | Mở / Lưu / Mới |
-| `Ctrl+C` `X` `V` | Copy / Cắt / Dán |
-| `Ctrl+B` `I` `U` | Đậm / Nghiêng / Gạch dưới |
-| `Ctrl+Z` / `Y` | Undo / Redo |
-| `Ctrl+F` / `H` | Tìm / Thay |
-| `Alt+*`=` | AutoSum |
-| `F2` | Sửa ô |
-| `F1` | Trợ giúp |
-| Chuột phải | Menu ngữ cảnh |
+`Ctrl+O/S/N` · `Ctrl+C/X/V` · `Ctrl+B/I/U` · `Ctrl+Z/Y` · `Ctrl+F/H` · `Alt+=` AutoSum · `Ctrl+Shift+C` Calculator · `F1` Help
 
 ## Cấu trúc
 
@@ -62,18 +44,13 @@ HTMLEXXCEL/
 ├── index.html
 ├── css/styles.css
 └── js/
-    ├── app.js
-    ├── csv.js
-    ├── io.js
+    ├── app.js          # Core spreadsheet
+    ├── sheets-ui.js    # Menus + function panel
+    ├── fx-catalog.js   # Function catalog
     ├── formulas.js
-    └── vendor/xlsx.full.min.js   # SheetJS
+    ├── calc.js
+    ├── csv.js / io.js
+    └── vendor/xlsx.full.min.js
 ```
 
-## Ghi chú
-
-- Style ô (màu, đậm…) lưu trong phiên làm việc; export XLSX/CSV hiện xuất **giá trị & công thức** (không full style OOXML).
-- Công thức tính khi hiển thị; file lưu giữ chuỗi gốc `=SUM(...)`.
-
-## Giấy phép
-
-Dùng tự do. SheetJS community theo license của SheetJS.
+Repo: https://github.com/3122380192/excelhtml
