@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="HTML Excel — mở CSV, chỉnh sửa như Excel, copy/paste như Google Sheets" />
-  <title>HTML Excel — CSV Spreadsheet</title>
+  <meta name="description" content="HTML Excel — mở CSV/XLSX/XLS/ODS, chỉnh sửa như Excel, copy/paste như Google Sheets" />
+  <title>HTML Excel — Spreadsheet</title>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23217346'/><text x='16' y='22' text-anchor='middle' fill='white' font-size='14' font-family='sans-serif' font-weight='bold'>XL</text></svg>" />
 </head>
@@ -18,9 +18,21 @@
       HTML Excel
     </div>
 
-    <button class="btn primary" id="btnOpen" title="Mở CSV (Ctrl+O)">📂 Mở</button>
-    <button class="btn" id="btnSave" title="Lưu CSV (Ctrl+S)">💾 Lưu</button>
-    <button class="btn" id="btnNew" title="Sheet mới">＋ Mới</button>
+    <button class="btn primary" id="btnOpen" title="Mở file (Ctrl+O) — CSV, XLSX, XLS, ODS…">📂 Mở</button>
+    <div class="menu-wrap">
+      <button class="btn" data-menu="menuSave" title="Lưu file (Ctrl+S)">💾 Lưu ▾</button>
+      <div class="menu-drop" id="menuSave">
+        <button type="button" id="btnSave" data-fmt="auto">💾 Lưu (định dạng hiện tại)</button>
+        <div class="menu-sep"></div>
+        <button type="button" id="btnSaveXlsx" data-fmt="xlsx">📗 Excel (.xlsx)</button>
+        <button type="button" id="btnSaveXls" data-fmt="xls">📘 Excel 97-2003 (.xls)</button>
+        <button type="button" id="btnSaveOds" data-fmt="ods">📙 OpenDocument (.ods)</button>
+        <div class="menu-sep"></div>
+        <button type="button" id="btnSaveCsv" data-fmt="csv">📄 CSV (.csv)</button>
+        <button type="button" id="btnSaveTsv" data-fmt="tsv">📄 TSV (.tsv)</button>
+      </div>
+    </div>
+    <button class="btn" id="btnNew" title="Workbook trống mới">＋ Mới</button>
 
     <div class="sep"></div>
 
@@ -89,19 +101,22 @@
     <div class="fill-handle" id="fillHandle" title="Kéo để fill"></div>
     <div class="hint show" id="hint">
       <div class="hint-box">
-        <h2>HTML Excel — CSV như Excel</h2>
+        <h2>HTML Excel — bảng tính trong trình duyệt</h2>
         <p>
-          Mở / kéo thả file <strong>.csv</strong>. Copy–paste nhiều ô giống Google Sheets
+          Mở / kéo thả <strong>.xlsx · .xls · .ods · .csv · .tsv · .html</strong>.
+          Copy–paste nhiều ô giống Google Sheets
           (<kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>V</kbd>).<br />
-          Hỗ trợ công thức: <kbd>=SUM(A1:A5)</kbd>, <kbd>=B2*C2</kbd>, <kbd>=AVERAGE(...)</kbd>
+          Công thức: <kbd>=SUM(A1:A5)</kbd>, <kbd>=B2*C2</kbd>, <kbd>=AVERAGE(...)</kbd>
         </p>
         <div class="hint-actions">
-          <button class="btn primary" id="btnOpenHint">📂 Mở CSV</button>
+          <button class="btn primary" id="btnOpenHint">📂 Mở file</button>
           <button class="btn" id="btnSample">✨ Dữ liệu mẫu</button>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="sheet-tabs" id="sheetTabs" aria-label="Các sheet"></div>
 
   <div class="status-bar">
     <span class="ready" id="statusReady">Sẵn sàng</span>
@@ -109,7 +124,7 @@
   </div>
 
   <div class="toast" id="toast"></div>
-  <input type="file" id="fileInput" accept=".csv,text/csv,.tsv,.txt" hidden />
+  <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.tab,.xlsx,.xls,.xlsm,.xlsb,.ods,.fods,.html,.htm,text/csv,text/tab-separated-values,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.oasis.opendocument.spreadsheet" hidden />
 
   <div class="modal-backdrop" id="helpModal" role="dialog" aria-label="Trợ giúp">
     <div class="modal">
@@ -119,8 +134,8 @@
       </header>
       <div class="body">
         <table class="shortcuts-table">
-          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Mở file CSV</td></tr>
-          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Lưu CSV (UTF-8 BOM)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>O</kbd></td><td>Mở file (CSV, XLSX, XLS, ODS…)</td></tr>
+          <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Lưu theo định dạng hiện tại</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>C</kbd> / <kbd>X</kbd> / <kbd>V</kbd></td><td>Copy / Cắt / Paste (TSV — tương thích Sheets &amp; Excel)</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Y</kbd></td><td>Hoàn tác / Làm lại</td></tr>
           <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd> / <kbd>H</kbd></td><td>Tìm / Thay thế</td></tr>
@@ -132,17 +147,19 @@
           <tr><td><kbd>F1</kbd></td><td>Mở trợ giúp này</td></tr>
         </table>
         <ul class="features-list">
-          <li>Công thức: SUM, AVERAGE, COUNT, MIN, MAX, IF, ROUND, ABS, LEN, CONCAT…</li>
-          <li>Tham chiếu ô: <code>=A1+B2</code>, vùng <code>=SUM(D2:D10)</code></li>
-          <li>Thanh trạng thái: Tổng / Trung bình / Min / Max vùng chọn</li>
-          <li>Sắp xếp cột, ghim header, fill handle, dark mode</li>
-          <li>Kéo thả file CSV, đổi kích thước cột</li>
+          <li>Mở / lưu: <strong>XLSX, XLS, ODS, CSV, TSV, HTML</strong></li>
+          <li>Nhiều sheet (tab dưới lưới) khi mở workbook Excel</li>
+          <li>Công thức: SUM, AVERAGE, COUNT, MIN, MAX, IF, ROUND…</li>
+          <li>Copy/paste giống Google Sheets · Undo/Redo · Sort · Find</li>
+          <li>Thanh trạng thái: Tổng / TB / Min / Max vùng chọn · Dark mode</li>
         </ul>
       </div>
     </div>
   </div>
 
+  <script src="js/vendor/xlsx.full.min.js"></script>
   <script src="js/csv.js"></script>
+  <script src="js/io.js"></script>
   <script src="js/formulas.js"></script>
   <script src="js/app.js"></script>
 </body>

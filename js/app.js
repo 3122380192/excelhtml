@@ -19,8 +19,13 @@
   let cols = DEFAULT_COLS;
   let colWidths = [];
   let fileName = "";
+  let fileFormat = "csv"; // current save format: csv|tsv|xlsx|xls|ods
   let dirty = false;
   let freezeHeader = false;
+
+  /** @type {{ name: string, data: string[][], rows: number, cols: number, colWidths: number[] }[]} */
+  let workbookSheets = [];
+  let activeSheetIndex = 0;
 
   let activeR = 0,
     activeC = 0;
@@ -69,6 +74,7 @@
   const statusReady = document.getElementById("statusReady");
   const statusStats = document.getElementById("statusStats");
   const helpModal = document.getElementById("helpModal");
+  const sheetTabs = document.getElementById("sheetTabs");
 
   const cellMap = new Map();
   const colHeaderMap = new Map();
@@ -253,63 +259,234 @@
     data[r][c] = val == null ? "" : String(val);
   }
 
-  // ── Load / Save ─────────────────────────────────────────
-  function loadGrid(grid, name) {
-    if (!grid.length) grid = [[""]];
-    const maxC = Math.max(...grid.map((r) => r.length), MIN_COLS);
-    rows = Math.max(grid.length + 8, MIN_ROWS, DEFAULT_ROWS);
-    cols = Math.max(maxC + 3, MIN_COLS, DEFAULT_COLS);
-    data = [];
+  // ── Workbook / multi-sheet ──────────────────────────────
+  function gridFromData() {
+    const g = [];
     for (let r = 0; r < rows; r++) {
-      data[r] = [];
-      for (let c = 0; c < cols; c++) {
-        data[r][c] = grid[r] && grid[r][c] != null ? String(grid[r][c]) : "";
+      g[r] = [];
+      for (let c = 0; c < cols; c++) g[r][c] = data[r][c] ?? "";
+    }
+    return g;
+  }
+
+  function padGrid(grid) {
+    if (!grid || !grid.length) grid = [[""]];
+    const maxC = Math.max(...grid.map((r) => (r ? r.length : 0)), MIN_COLS);
+    const nr = Math.max(grid.length + 8, MIN_ROWS, DEFAULT_ROWS);
+    const nc = Math.max(maxC + 3, MIN_COLS, DEFAULT_COLS);
+    const out = [];
+    for (let r = 0; r < nr; r++) {
+      out[r] = [];
+      for (let c = 0; c < nc; c++) {
+        out[r][c] = grid[r] && grid[r][c] != null ? String(grid[r][c]) : "";
       }
     }
-    colWidths = Array.from({ length: cols }, () => DEFAULT_COL_W);
-    fileName = name || "untitled.csv";
-    dirty = false;
-    undoStack.length = 0;
-    redoStack.length = 0;
+    return { data: out, rows: nr, cols: nc, colWidths: Array.from({ length: nc }, () => DEFAULT_COL_W) };
+  }
+
+  function snapshotActiveToWorkbook() {
+    if (!workbookSheets.length) {
+      workbookSheets = [
+        {
+          name: "Sheet1",
+          data: gridFromData(),
+          rows,
+          cols,
+          colWidths: colWidths.slice(),
+        },
+      ];
+      activeSheetIndex = 0;
+      return;
+    }
+    const sh = workbookSheets[activeSheetIndex];
+    if (!sh) return;
+    sh.data = gridFromData();
+    sh.rows = rows;
+    sh.cols = cols;
+    sh.colWidths = colWidths.slice();
+  }
+
+  function applySheetState(sh) {
+    data = sh.data.map((row) => row.slice());
+    rows = sh.rows;
+    cols = sh.cols;
+    colWidths = (sh.colWidths && sh.colWidths.slice()) || Array.from({ length: cols }, () => DEFAULT_COL_W);
+    while (colWidths.length < cols) colWidths.push(DEFAULT_COL_W);
     activeR = activeC = selR1 = selC1 = selR2 = selC2 = 0;
-    hint.classList.remove("show");
+    editing = false;
+    editEl = null;
     renderSheet();
     setSelection(0, 0, 0, 0);
     updateStatus();
+  }
+
+  function renderSheetTabs() {
+    if (!sheetTabs) return;
+    sheetTabs.innerHTML = "";
+    workbookSheets.forEach((sh, i) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sheet-tab" + (i === activeSheetIndex ? " active" : "");
+      btn.textContent = sh.name || "Sheet" + (i + 1);
+      btn.title = sh.name;
+      btn.addEventListener("click", () => switchSheet(i));
+      btn.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        renameSheet(i);
+      });
+      sheetTabs.appendChild(btn);
+    });
+    const add = document.createElement("button");
+    add.type = "button";
+    add.className = "sheet-tab-add";
+    add.title = "Thêm sheet";
+    add.textContent = "+";
+    add.addEventListener("click", addWorkbookSheet);
+    sheetTabs.appendChild(add);
+  }
+
+  function switchSheet(index) {
+    if (index === activeSheetIndex || index < 0 || index >= workbookSheets.length) return;
+    commitEdit();
+    snapshotActiveToWorkbook();
+    activeSheetIndex = index;
+    undoStack.length = 0;
+    redoStack.length = 0;
     updateUndoButtons();
-    toast(`Đã mở: ${fileName} (${grid.length} hàng × ${maxC} cột)`);
+    applySheetState(workbookSheets[index]);
+    renderSheetTabs();
+  }
+
+  function addWorkbookSheet() {
+    commitEdit();
+    snapshotActiveToWorkbook();
+    const n = workbookSheets.length + 1;
+    const padded = padGrid([[""]]);
+    workbookSheets.push({
+      name: "Sheet" + n,
+      data: padded.data,
+      rows: padded.rows,
+      cols: padded.cols,
+      colWidths: padded.colWidths,
+    });
+    activeSheetIndex = workbookSheets.length - 1;
+    // Prefer xlsx when multi-sheet
+    if (fileFormat === "csv" || fileFormat === "tsv" || fileFormat === "txt") {
+      fileFormat = "xlsx";
+      if (!fileName || /\.(csv|tsv|txt)$/i.test(fileName)) {
+        fileName = (IO.baseName(fileName || "workbook") || "workbook") + ".xlsx";
+      }
+    }
+    undoStack.length = 0;
+    redoStack.length = 0;
+    updateUndoButtons();
+    applySheetState(workbookSheets[activeSheetIndex]);
+    renderSheetTabs();
+    markDirty();
+    toast("Đã thêm " + workbookSheets[activeSheetIndex].name);
+  }
+
+  function renameSheet(index) {
+    const sh = workbookSheets[index];
+    if (!sh) return;
+    const name = prompt("Tên sheet:", sh.name);
+    if (name == null) return;
+    const cleaned = name.trim().slice(0, 31).replace(/[\\/?*[\]]/g, "_");
+    if (!cleaned) return;
+    sh.name = cleaned;
+    renderSheetTabs();
+    markDirty();
+  }
+
+  function exportSheetsPayload() {
+    snapshotActiveToWorkbook();
+    return workbookSheets.map((sh) => ({
+      name: sh.name,
+      grid: sh.data,
+    }));
+  }
+
+  // ── Load / Save ─────────────────────────────────────────
+  function loadGrid(grid, name) {
+    loadWorkbook(
+      {
+        sheets: [{ name: "Sheet1", grid }],
+        fileName: name || "untitled.csv",
+        format: IO.extOf(name) || "csv",
+      },
+      true
+    );
+  }
+
+  function loadWorkbook(wb, quiet) {
+    const sheets = (wb.sheets && wb.sheets.length ? wb.sheets : [{ name: "Sheet1", grid: [[""]] }]).map(
+      (s, i) => {
+        const padded = padGrid(s.grid);
+        return {
+          name: s.name || "Sheet" + (i + 1),
+          data: padded.data,
+          rows: padded.rows,
+          cols: padded.cols,
+          colWidths: padded.colWidths,
+        };
+      }
+    );
+    workbookSheets = sheets;
+    activeSheetIndex = 0;
+    fileName = wb.fileName || "untitled.xlsx";
+    fileFormat = (wb.format || IO.extOf(fileName) || "xlsx").toLowerCase();
+    if (fileFormat === "xlsm" || fileFormat === "xlsb" || fileFormat === "fods") fileFormat = "xlsx";
+    if (fileFormat === "html" || fileFormat === "htm") fileFormat = "xlsx";
+    if (fileFormat === "tab") fileFormat = "tsv";
+    dirty = false;
+    undoStack.length = 0;
+    redoStack.length = 0;
+    hint.classList.remove("show");
+    applySheetState(workbookSheets[0]);
+    renderSheetTabs();
+    updateUndoButtons();
+    const sh0 = wb.sheets[0];
+    const g = sh0 && sh0.grid ? sh0.grid : [[""]];
+    const maxC = Math.max(...g.map((r) => (r ? r.length : 0)), 1);
+    if (!quiet) {
+      const multi = sheets.length > 1 ? ` · ${sheets.length} sheet` : "";
+      toast(`Đã mở: ${fileName} (${g.length}×${maxC}${multi}) · ${IO.formatLabel(fileFormat)}`);
+    }
   }
 
   function newSheet() {
-    if (dirty && !confirm("Dữ liệu chưa lưu sẽ mất. Tạo sheet mới?")) return;
-    rows = DEFAULT_ROWS;
-    cols = DEFAULT_COLS;
-    data = Array.from({ length: rows }, () => Array(cols).fill(""));
-    colWidths = Array.from({ length: cols }, () => DEFAULT_COL_W);
-    fileName = "untitled.csv";
+    if (dirty && !confirm("Dữ liệu chưa lưu sẽ mất. Tạo workbook mới?")) return;
+    const padded = padGrid([[""]]);
+    workbookSheets = [
+      {
+        name: "Sheet1",
+        data: padded.data,
+        rows: padded.rows,
+        cols: padded.cols,
+        colWidths: padded.colWidths,
+      },
+    ];
+    activeSheetIndex = 0;
+    fileName = "untitled.xlsx";
+    fileFormat = "xlsx";
     dirty = false;
     undoStack.length = 0;
     redoStack.length = 0;
     hint.classList.remove("show");
-    renderSheet();
-    setSelection(0, 0, 0, 0);
-    updateStatus();
+    applySheetState(workbookSheets[0]);
+    renderSheetTabs();
     updateUndoButtons();
-    toast("Sheet trống mới");
+    toast("Workbook trống mới");
   }
 
   function openFile(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        loadGrid(CSV.parseCSV(String(reader.result)), file.name);
-      } catch (e) {
-        toast("Lỗi đọc CSV: " + e.message);
+    toast("Đang mở " + file.name + "…");
+    IO.readFile(file)
+      .then((wb) => loadWorkbook(wb))
+      .catch((e) => {
+        toast("Lỗi đọc file: " + (e.message || e));
         console.error(e);
-      }
-    };
-    reader.onerror = () => toast("Không đọc được file");
-    reader.readAsText(file, "UTF-8");
+      });
   }
 
   function usedBounds() {
@@ -326,26 +503,43 @@
     return { maxR, maxC };
   }
 
-  function saveCSV() {
-    const { maxR, maxC } = usedBounds();
-    const exportRows = [];
-    for (let r = 0; r <= maxR; r++) {
-      const row = [];
-      for (let c = 0; c <= maxC; c++) row.push(getRaw(r, c));
-      exportRows.push(row);
+  function resolveSaveFormat(fmt) {
+    if (!fmt || fmt === "auto") {
+      const ext = IO.extOf(fileName);
+      if (ext && ["csv", "tsv", "txt", "xlsx", "xls", "ods"].includes(ext)) return ext;
+      return fileFormat || "xlsx";
     }
-    if (!exportRows.length) exportRows.push([""]);
+    return fmt;
+  }
 
-    const csv = CSV.toCSV(exportRows);
-    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName || "export.csv";
-    a.click();
-    URL.revokeObjectURL(a.href);
-    dirty = false;
-    updateStatus();
-    toast("Đã lưu: " + (fileName || "export.csv"));
+  function saveAs(fmt) {
+    commitEdit();
+    const format = resolveSaveFormat(fmt);
+    // Multi-sheet → prefer workbook formats
+    if ((format === "csv" || format === "tsv" || format === "txt") && workbookSheets.length > 1) {
+      const ok = confirm(
+        "File có " +
+          workbookSheets.length +
+          " sheet. CSV/TSV chỉ lưu sheet đang mở.\nBấm OK để lưu sheet hiện tại, Cancel để hủy (nên chọn Excel .xlsx)."
+      );
+      if (!ok) return;
+    }
+    try {
+      const savedName = IO.saveWorkbook(exportSheetsPayload(), fileName || "workbook", format);
+      fileName = savedName;
+      fileFormat = format === "txt" ? "csv" : format;
+      dirty = false;
+      updateStatus();
+      toast("Đã lưu: " + savedName);
+    } catch (e) {
+      toast("Lỗi lưu: " + (e.message || e));
+      console.error(e);
+    }
+  }
+
+  /** @deprecated alias */
+  function saveCSV() {
+    saveAs("auto");
   }
 
   // ── Render ──────────────────────────────────────────────
@@ -557,7 +751,8 @@
     const rg = getRange();
     const rr = rg.r2 - rg.r1 + 1;
     const cc = rg.c2 - rg.c1 + 1;
-    fileNameEl.textContent = fileName ? (dirty ? "● " : "") + fileName : "Chưa mở file";
+    const fmtTag = fileFormat ? " · " + String(fileFormat).toUpperCase() : "";
+    fileNameEl.textContent = fileName ? (dirty ? "● " : "") + fileName + fmtTag : "Chưa mở file";
     statusReady.textContent = dirty ? "Đã chỉnh sửa" : "Sẵn sàng";
 
     // Excel-like selection stats
@@ -1207,7 +1402,7 @@
     }
     if (mod && e.key.toLowerCase() === "s") {
       e.preventDefault();
-      saveCSV();
+      saveAs("auto");
       return;
     }
     if (mod && e.key.toLowerCase() === "f") {
@@ -1438,7 +1633,12 @@
   // ── Buttons ─────────────────────────────────────────────
   document.getElementById("btnOpen").onclick = () => fileInput.click();
   document.getElementById("btnOpenHint").onclick = () => fileInput.click();
-  document.getElementById("btnSave").onclick = () => saveCSV();
+  document.getElementById("btnSave").onclick = () => saveAs("auto");
+  document.getElementById("btnSaveXlsx").onclick = () => saveAs("xlsx");
+  document.getElementById("btnSaveXls").onclick = () => saveAs("xls");
+  document.getElementById("btnSaveOds").onclick = () => saveAs("ods");
+  document.getElementById("btnSaveCsv").onclick = () => saveAs("csv");
+  document.getElementById("btnSaveTsv").onclick = () => saveAs("tsv");
   document.getElementById("btnNew").onclick = () => newSheet();
   document.getElementById("btnCopy").onclick = () => copySelection(false);
   document.getElementById("btnCut").onclick = () => copySelection(true);
@@ -1488,19 +1688,34 @@
   // Sample data button
   document.getElementById("btnSample").onclick = () => {
     if (dirty && !confirm("Ghi đè dữ liệu hiện tại bằng mẫu?")) return;
-    loadGrid(
-      [
-        ["Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"],
-        ["Laptop", "3", "15000000", "=B2*C2"],
-        ["Chuột", "10", "150000", "=B3*C3"],
-        ["Bàn phím", "5", "450000", "=B4*C4"],
-        ["Màn hình", "2", "3200000", "=B5*C5"],
-        ["", "", "Tổng:", "=SUM(D2:D5)"],
-        ["", "", "Trung bình:", "=AVERAGE(D2:D5)"],
-        ["", "", "Max:", "=MAX(D2:D5)"],
+    loadWorkbook({
+      fileName: "mau-cong-thuc.xlsx",
+      format: "xlsx",
+      sheets: [
+        {
+          name: "Bán hàng",
+          grid: [
+            ["Sản phẩm", "Số lượng", "Đơn giá", "Thành tiền"],
+            ["Laptop", "3", "15000000", "=B2*C2"],
+            ["Chuột", "10", "150000", "=B3*C3"],
+            ["Bàn phím", "5", "450000", "=B4*C4"],
+            ["Màn hình", "2", "3200000", "=B5*C5"],
+            ["", "", "Tổng:", "=SUM(D2:D5)"],
+            ["", "", "Trung bình:", "=AVERAGE(D2:D5)"],
+            ["", "", "Max:", "=MAX(D2:D5)"],
+          ],
+        },
+        {
+          name: "Ghi chú",
+          grid: [
+            ["Hướng dẫn"],
+            ["Mở file .xlsx / .xls / .ods / .csv bằng nút Mở"],
+            ["Lưu bằng menu Lưu ▾ — chọn định dạng"],
+            ["Double-click tab sheet để đổi tên"],
+          ],
+        },
       ],
-      "mau-cong-thuc.csv"
-    );
+    });
   };
 
   // ── Init ────────────────────────────────────────────────
@@ -1508,13 +1723,27 @@
     const theme = localStorage.getItem("htmlexxcel-theme");
     if (theme === "dark") document.documentElement.setAttribute("data-theme", "dark");
 
-    data = Array.from({ length: DEFAULT_ROWS }, () => Array(DEFAULT_COLS).fill(""));
-    rows = DEFAULT_ROWS;
-    cols = DEFAULT_COLS;
-    colWidths = Array.from({ length: cols }, () => DEFAULT_COL_W);
-    renderSheet();
-    setSelection(0, 0, 0, 0);
-    updateStatus();
+    if (fileInput && typeof IO !== "undefined") {
+      fileInput.setAttribute("accept", IO.ACCEPT);
+    }
+
+    const padded = padGrid([[""]]);
+    workbookSheets = [
+      {
+        name: "Sheet1",
+        data: padded.data,
+        rows: padded.rows,
+        cols: padded.cols,
+        colWidths: padded.colWidths,
+      },
+    ];
+    activeSheetIndex = 0;
+    fileName = "";
+    fileFormat = "xlsx";
+    applySheetState(workbookSheets[0]);
+    renderSheetTabs();
     updateUndoButtons();
+    // show empty hint
+    hint.classList.add("show");
   })();
 })();
